@@ -11,7 +11,7 @@ export default function Home() {
         {/* HERO Section - Image */}
         <div className="absolute inset-0 -z-10">
           <Image
-            src="/background-4-up.png"
+            src="/backgrounds/background-4-up.png"
             alt="Background"
             fill
             className="object-cover opacity-40 scale-105"
