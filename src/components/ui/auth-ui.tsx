@@ -74,7 +74,14 @@ export function BrandPanel({ variant }: { variant: "login" | "signup" }) {
       />
 
       <div className="relative z-10">
-        <TracklyLogo invert />
+        <Image
+          src="/icons/watermark-logo-light.svg"
+          alt="icon"
+          width={140}
+          height={48}
+          className="object-contain shrink-0 cursor-default"
+          priority
+        />
       </div>
 
       <div className="relative z-10 max-w-md">
@@ -128,14 +135,10 @@ export function AuthShell({
   children: React.ReactNode
 }) {
   return (
-    <main className="grid min-h-screen lg:grid-cols-2">
+    <main className="grid flex-1 min-h-0 lg:min-h-screen lg:grid-cols-2">
       <BrandPanel variant={variant} />
       <div className="flex flex-col px-6 py-8 sm:px-10">
-        {/* mobile logo */}
-        <div className="lg:hidden">
-          <TracklyLogo />
-        </div>
-        <div className="flex flex-1 items-center justify-center py-10">
+        <div className="flex flex-1 items-start justify-center py-4 lg:items-center lg:py-10">
           <div className="animate-rise w-full max-w-md">{children}</div>
         </div>
       </div>
