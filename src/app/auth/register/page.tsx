@@ -30,19 +30,19 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden md:contents">
-      <div className="relative shrink-0 md:hidden">
+    <>
+      <div className="relative md:hidden">
         <div
-          className="absolute inset-x-0 top-0 h-128 -z-10 pointer-events-none
-      bg-[linear-gradient(to_bottom,rgba(219,234,254,0.9)_0%,rgba(224,231,255,0.6)_60%,transparent_100%)]"
+          className="absolute inset-x-0 top-0 h-64 -z-10 pointer-events-none
+        bg-[linear-gradient(to_bottom,rgba(219,234,254,0.9)_0%,rgba(224,231,255,0.6)_60%,transparent_100%)]"
         />
-        <div className="flex justify-center pt-8 pb-2">
+        <div className="flex justify-center pt-6 pb-1">
           <Link href="/" className="flex flex-col items-center gap-1">
             <Image
               src="/icons/watermark-logo-dark.svg"
               alt="icon"
-              width={140}
-              height={48}
+              width={120}
+              height={40}
               className="object-contain shrink-0 cursor-default"
               priority
             />
@@ -52,6 +52,7 @@ export default function SignupPage() {
           </Link>
         </div>
       </div>
+
       <AuthShell variant="signup">
         <header className="mb-8 mt-0">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -150,6 +151,6 @@ export default function SignupPage() {
           </Link>
         </p>
       </AuthShell>
-    </div>
+    </>
   );
 }
