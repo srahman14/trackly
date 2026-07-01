@@ -1,6 +1,8 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const faqs = [
   {
@@ -13,11 +15,11 @@ const faqs = [
   },
   {
     q: "Do I need to connect my email?",
-    a: "No. Trackly works without email integration, keeping your data fully under your control."
+    a: "Yes, to use Trackly's services you must use your email to sign up."
   },
   {
     q: "Is Trackly free to use?",
-    a: "Yes, there is a free version with core features. Premium features may be added later."
+    a: "Yes, Trackly's services are free to use."
   }
 ];
 
@@ -26,9 +28,7 @@ export default function FAQ() {
 
   return (
     <section className="py-32 border-t">
-
       <div className="mx-auto max-w-3xl px-6">
-
         {/* HEADER */}
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900">
@@ -42,35 +42,50 @@ export default function FAQ() {
 
         {/* FAQ LIST */}
         <div className="mt-16 space-y-3">
+          {faqs.map((item, i) => {
+            const isOpen = open === i;
 
-          {faqs.map((item, i) => (
-            <div
-              key={i}
-              className="rounded-xl border bg-white p-5 cursor-pointer"
-              onClick={() => setOpen(open === i ? null : i)}
-            >
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium text-zinc-900">
-                  {item.q}
-                </h3>
+            return (
+              <div
+                key={i}
+                className="rounded-xl border bg-white p-5 cursor-pointer"
+                onClick={() => setOpen(isOpen ? null : i)}
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="font-medium text-zinc-900">
+                    {item.q}
+                  </h3>
 
-                <span className="text-zinc-400">
-                  {open === i ? "−" : "+"}
-                </span>
+                  <motion.span
+                    className="text-zinc-400 shrink-0"
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                  >
+                    <ChevronDown />
+                  </motion.span>
+                </div>
+
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      key="content"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <p className="mt-3 text-sm text-zinc-600">
+                        {item.a}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-
-              {open === i && (
-                <p className="mt-3 text-sm text-zinc-600">
-                  {item.a}
-                </p>
-              )}
-            </div>
-          ))}
-
+            );
+          })}
         </div>
-
       </div>
-
     </section>
   );
 }

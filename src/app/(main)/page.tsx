@@ -1,7 +1,9 @@
 import FAQ from "@/components/FAQ";
 import FeatureCards from "@/components/FeatureCards";
 import { Button } from "@/components/ui/button";
+import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -45,22 +47,26 @@ export default function Home() {
           {/* subtext */}
           <p className="mt-6 text-lg text-zinc-600 max-w-2xl mx-auto">
             A clean, private workspace to manage job applications, notes, and
-            progress — without trackers, ads, or data harvesting.
+            progress. Without trackers, ads, or data harvesting.
           </p>
 
           {/* CTA buttons */}
           <div className="mt-8 flex items-center justify-center gap-4">
-            <Button>
-              <p className="font-medium p-2 text-md">Get started</p>
-            </Button>
+            <Link href={'/auth/register'}>
+              <Button className="mt-6 inline-flex items-center gap-2 px-5 py-5 cursor-pointer rounded-lg bg-black text-white text-sm font-medium hover:bg-zinc-800 transition">
+                Get started
+              </Button>
+            </Link>
 
-            <Button variant={"outline"}>
-              <p className="font-medium p-2 text-md">Learn more</p>
-            </Button>
+            <Link href={'/'}>
+              <Button variant={"outline"} className="mt-6 inline-flex items-center gap-2 px-5 py-5 cursor-pointer rounded-lg text-sm font-medium transition">
+                Learn more
+              </Button>
+            </Link>
           </div>
 
           <p className="mt-6 text-xs text-zinc-500">
-            No ads. No tracking. Your data stays yours.
+            No ads. No tracking. Your data is priority.
           </p>
         </div>
       </section>
@@ -104,12 +110,9 @@ export default function Home() {
         </div>
       </section>
 
- <section className="py-32">
-
+      <section className="py-32">
         <div className="mx-auto max-w-6xl px-6">
-
           <div className="grid md:grid-cols-2 gap-16 items-center">
-
             {/* IMAGE */}
             <div className="relative h-[420px] w-full order-2 md:order-1">
               <div className="absolute inset-0 rounded-xl overflow-hidden border bg-zinc-100">
@@ -124,91 +127,84 @@ export default function Home() {
 
             {/* TEXT */}
             <div className="order-1 md:order-2">
-
               <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900">
                 That’s where Trackly comes in
               </h2>
 
               <p className="mt-6 text-zinc-600 text-lg leading-relaxed">
                 Most people apply to dozens of jobs across different platforms —
-                LinkedIn, company websites, referrals — and quickly lose track of what
-                they’ve applied to.
+                LinkedIn, company websites, referrals — and quickly lose track
+                of what they’ve applied to.
               </p>
 
               <p className="mt-4 text-zinc-500">
-                Instead of spreadsheets, notes, and forgotten tabs — Trackly gives you
-                one place to stay in control.
+                Instead of spreadsheets, notes, and forgotten tabs — Trackly
+                gives you one place to stay in control.
               </p>
-
             </div>
-
           </div>
-
         </div>
-
       </section>
 
       {/* FEATURE CARDS SECTION */}
       <FeatureCards />
 
-<section className="py-32">
+      <section className="py-32">
+        <div className="mx-auto max-w-6xl px-6">
+          {/* HEADER */}
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900">
+              How Trackly works
+            </h2>
 
-  <div className="mx-auto max-w-6xl px-6">
+            <p className="mt-4 text-zinc-600">
+              A simple flow that brings all your job applications into one
+              private place.
+            </p>
+          </div>
 
-    {/* HEADER */}
-    <div className="text-center max-w-2xl mx-auto">
-      <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900">
-        How Trackly works
-      </h2>
+          {/* STEPS */}
+          <div className="mt-16 grid md:grid-cols-3 gap-8">
+            {/* STEP 1 */}
+            <div className="rounded-xl border bg-white p-6">
+              <div className="text-sm text-zinc-400">Step 01</div>
+              <h3 className="mt-3 font-medium text-zinc-900">
+                Add your applications
+              </h3>
+              <p className="mt-2 text-sm text-zinc-600">
+                Quickly log jobs from LinkedIn, company sites, or referrals in
+                one place.
+              </p>
+            </div>
 
-      <p className="mt-4 text-zinc-600">
-        A simple flow that brings all your job applications into one private place.
-      </p>
-    </div>
+            {/* STEP 2 */}
+            <div className="rounded-xl border bg-white p-6">
+              <div className="text-sm text-zinc-400">Step 02</div>
+              <h3 className="mt-3 font-medium text-zinc-900">
+                Organise & track progress
+              </h3>
+              <p className="mt-2 text-sm text-zinc-600">
+                See every application stage clearly — applied, interviewing,
+                offer, or rejected.
+              </p>
+            </div>
 
-    {/* STEPS */}
-    <div className="mt-16 grid md:grid-cols-3 gap-8">
+            {/* STEP 3 */}
+            <div className="rounded-xl border bg-white p-6">
+              <div className="text-sm text-zinc-400">Step 03</div>
+              <h3 className="mt-3 font-medium text-zinc-900">
+                Stay in control
+              </h3>
+              <p className="mt-2 text-sm text-zinc-600">
+                Never lose track of opportunities — everything stays structured
+                and private.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* STEP 1 */}
-      <div className="rounded-xl border bg-white p-6">
-        <div className="text-sm text-zinc-400">Step 01</div>
-        <h3 className="mt-3 font-medium text-zinc-900">
-          Add your applications
-        </h3>
-        <p className="mt-2 text-sm text-zinc-600">
-          Quickly log jobs from LinkedIn, company sites, or referrals in one place.
-        </p>
-      </div>
-
-      {/* STEP 2 */}
-      <div className="rounded-xl border bg-white p-6">
-        <div className="text-sm text-zinc-400">Step 02</div>
-        <h3 className="mt-3 font-medium text-zinc-900">
-          Organise & track progress
-        </h3>
-        <p className="mt-2 text-sm text-zinc-600">
-          See every application stage clearly — applied, interviewing, offer, or rejected.
-        </p>
-      </div>
-
-      {/* STEP 3 */}
-      <div className="rounded-xl border bg-white p-6">
-        <div className="text-sm text-zinc-400">Step 03</div>
-        <h3 className="mt-3 font-medium text-zinc-900">
-          Stay in control
-        </h3>
-        <p className="mt-2 text-sm text-zinc-600">
-          Never lose track of opportunities — everything stays structured and private.
-        </p>
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-    <FAQ />
+      <FAQ />
     </main>
   );
 }

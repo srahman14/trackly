@@ -1,4 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { Button } from "./ui/button";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -24,10 +27,12 @@ export default function Footer() {
               data. Simple, private, and built for focus.
             </p>
 
-            <button className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-black text-white text-sm font-medium hover:bg-zinc-800 transition">
-              Get started
-              <ArrowUpRight className="w-4 h-4" />
-            </button>
+            <Link href={"/auth/register"}>
+              <Button className="mt-6 inline-flex items-center gap-2 px-5 py-5 cursor-pointer rounded-lg bg-black text-white text-sm font-medium hover:bg-zinc-800 transition">
+                Get started
+                <ArrowUpRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
 
           {/* RIGHT IMAGE */}
@@ -61,7 +66,16 @@ export default function Footer() {
         {/* ===================== */}
         <div className="flex flex-col md:flex-row justify-between gap-10 py-10 border-t">
           {/* BRAND */}
-          <div className="font-bold tracking-tight text-xl">Trackly</div>
+          <div className="font-bold tracking-tight text-xl">
+            <Image
+              src="/icons/watermark-logo-dark.svg"
+              alt="icon"
+              width={140}
+              height={48}
+              className="object-contain shrink-0"
+              priority
+            />
+          </div>
 
           {/* LINKS */}
           <div className="grid grid-cols-3 gap-10 text-sm text-zinc-600">
@@ -71,7 +85,7 @@ export default function Footer() {
               </p>
               <p>Features</p>
               <p>How it works</p>
-              <p>FAQ</p>
+              <p>Register</p>
             </div>
 
             <div className="space-y-2">
