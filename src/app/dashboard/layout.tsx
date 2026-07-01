@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "../globals.css";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "trackly | dashboard",
@@ -12,8 +15,16 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-        {children}
-    </div>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <SidebarProvider>
+        <AppSidebar />
+        <main className="flex w-full flex-1 flex-col">{children}</main>
+      </SidebarProvider>
+    </ThemeProvider>
   );
 }
