@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import {
-    BadgeAlert,
+  BadgeAlert,
   Calendar,
   ChevronsUpDown,
   Circle,
@@ -41,6 +41,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ModeToggle } from "./theme-toggle";
 import { useTheme } from "next-themes";
+import { createClient } from "@/lib/supabase/client";
 
 // Menu items.
 const platformItems = [
@@ -82,6 +83,12 @@ const applicationItems = [
 export function AppSidebar() {
   const router = useRouter();
   const { theme } = useTheme();
+  const supabase = createClient();
+
+  const handleSignout = () => {
+    supabase.auth.signOut();
+    router.push("/");
+  };
 
   let logoSrc =
     theme === "light"
@@ -206,7 +213,10 @@ export function AppSidebar() {
                   </Link>
                 </DropdownMenuItem>
                 <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
-                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 ring-0 outline-none cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => handleSignout()}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 ring-0 outline-none cursor-pointer"
+                >
                   <LogOut className="w-4 h-4" />
                   <span>Sign out</span>
                 </DropdownMenuItem>

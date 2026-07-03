@@ -52,14 +52,17 @@ export default function Home() {
 
           {/* CTA buttons */}
           <div className="mt-8 flex items-center justify-center gap-4">
-            <Link href={'/auth/register'}>
+            <Link href={"/auth/register"}>
               <Button className="mt-6 inline-flex items-center gap-2 px-5 py-5 cursor-pointer rounded-lg bg-black text-white text-sm font-medium hover:bg-zinc-800 transition">
                 Get started
               </Button>
             </Link>
 
-            <Link href={'/'}>
-              <Button variant={"outline"} className="mt-6 inline-flex items-center gap-2 px-5 py-5 cursor-pointer rounded-lg text-sm font-medium transition">
+            <Link href={"/"}>
+              <Button
+                variant={"outline"}
+                className="mt-6 inline-flex items-center gap-2 px-5 py-5 cursor-pointer rounded-lg text-sm font-medium transition"
+              >
                 Learn more
               </Button>
             </Link>

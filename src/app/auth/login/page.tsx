@@ -13,19 +13,39 @@ import {
   OrDivider,
 } from "@/components/ui/auth-ui";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [remember, setRemember] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
+  const supabase = createClient();
+  const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Replace with your real authentication call.
+
+    if (!email || !password) {
+      console.log("Invalid credentials");
+    }
+
+    // Replace with react-hot-toast instead of logging
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error(error);
+    }
+
     setTimeout(() => setLoading(false), 1400);
-  }
+    router.push("/dashboard");
+    setLoading(false);
+  };
 
   return (
     <>
