@@ -23,7 +23,7 @@ export default function DashboardLayout({
     >
       <SidebarProvider>
         <AppSidebar />
-        <main className="flex w-full flex-1 flex-col">{children}</main>
+        <main className="flex w-full min-w-0 flex-1 flex-col">{children}</main>
       </SidebarProvider>
     </ThemeProvider>
   );
