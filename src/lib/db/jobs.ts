@@ -124,11 +124,18 @@ export async function deleteJob(
 ): Promise<void> {
   await getJobById(supabase, userId, id);
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("jobs")
     .delete()
     .eq("id", id)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
 
   if (error) throw new ApiError(500, "Failed to delete job");
+
+  // RLS can silently match zero rows without raising a Postgres error —
+  // treat "nothing came back" as a failure rather than a false success
+  if (!data || data.length === 0) {
+    throw new ApiError(500, "Delete failed: no rows affected (check RLS policy)");
+  }
 }
