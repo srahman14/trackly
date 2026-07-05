@@ -52,7 +52,7 @@ const platformItems = [
   },
   {
     title: "Applications",
-    url: "/dashboard/",
+    url: "/dashboard/jobs",
     icon: ListTodo,
   },
   {
@@ -93,7 +93,7 @@ export function AppSidebar() {
   let logoSrc =
     theme === "light"
       ? "/icons/watermark-logo-dark.svg"
-      : "icons/watermark-logo-light.svg";
+      : "/icons/watermark-logo-light.svg";
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
