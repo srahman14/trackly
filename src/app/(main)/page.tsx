@@ -1,9 +1,20 @@
+"use client";
+
 import FAQ from "@/components/FAQ";
 import FeatureCards from "@/components/FeatureCards";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { Globe, Monitor, MapPin, Activity } from "lucide-react";
+
+const COLLECTED_DATA_POINTS = [
+  { icon: Globe, label: "IP address" },
+  { icon: Monitor, label: "Device and browser information" },
+  { icon: MapPin, label: "Location" },
+  { icon: Activity, label: "Behavioral tracking, especially on ATS platforms" },
+];
 
 export default function Home() {
   return (
@@ -13,10 +24,10 @@ export default function Home() {
         {/* HERO Section - Image */}
         <div className="absolute inset-0 -z-10">
           <Image
-            src="/backgrounds/background-4.png"
+            src="/backgrounds/background-2.png"
             alt="Background"
             fill
-            className="object-cover opacity-40 scale-105"
+            className="object-cover opacity-90 scale-105"
             priority
           />
 
@@ -37,12 +48,21 @@ export default function Home() {
           </div>
 
           {/* headline */}
-          <h1 className="mt-6 text-4xl md:text-5xl font-semibold tracking-tight text-zinc-900">
-            Track your job applications
-            <span className="block text-zinc-500 font-medium">
-              with your <span className="text-">privacy</span> put first.
-            </span>
-          </h1>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <h1 className="mt-6 text-4xl md:text-7xl font-semibold tracking-tight text-zinc-900">
+              Track your data
+              <span className="block text-zinc-500 font-medium">
+                with every{" "}
+                <span className="text-black italic tracking-tighter">
+                  application.
+                </span>
+              </span>
+            </h1>
+          </motion.div>
 
           {/* subtext */}
           <p className="mt-6 text-lg text-zinc-600 max-w-2xl mx-auto">
@@ -105,10 +125,152 @@ export default function Home() {
                   className="object-cover"
                 />
               </div>
-
-              {/* subtle glow */}
               <div className="absolute -inset-4 bg-gradient-to-tr from-zinc-200/40 to-transparent blur-2xl -z-10" />
             </div>
+          </div>
+
+          {/* STATS SECTION */}
+          <div className="mt-32 pt-16 border-t border-zinc-200">
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="text-sm font-medium tracking-wide text-[#4C3575] uppercase"
+            >
+              The numbers
+            </motion.p>
+
+            <motion.h3
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+              className="mt-3 text-2xl md:text-3xl font-medium tracking-tight text-zinc-900 max-w-xl"
+            >
+              The job hunt runs on more data than you'd think.
+            </motion.h3>
+
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={{
+                hidden: {},
+                show: {
+                  transition: { staggerChildren: 0.12, delayChildren: 0.15 },
+                },
+              }}
+              className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12"
+            >
+              {[
+                {
+                  stat: "9%",
+                  copy: "of applicants say they always read a privacy policy before submitting their information.",
+                },
+                {
+                  stat: "35 min",
+                  copy: "the average time it takes to read a job platform's privacy policy in full.",
+                },
+                {
+                  stat: "~90%",
+                  copy: "of job platforms share or sell applicant data with third parties.",
+                },
+                {
+                  stat: "1–4 yrs",
+                  copy: "how long employers are required to retain your resume and application data, depending on jurisdiction.",
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  variants={{
+                    hidden: { opacity: 0, y: 16 },
+                    show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                  }}
+                >
+                  <p className="text-4xl md:text-5xl font-semibold tracking-tight bg-clip-text text-transparent bg-[linear-gradient(120deg,#4C3575,#8B6FC7)]">
+                    {item.stat}
+                  </p>
+                  <p className="mt-3 text-sm text-zinc-500 leading-relaxed">
+                    {item.copy}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+            >
+              <Link
+                href="/sources"
+                className="mt-10 inline-block text-xs text-zinc-400 hover:text-zinc-600 underline underline-offset-4 decoration-zinc-300 transition-colors"
+              >
+                See sources
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* WHAT'S ACTUALLY COLLECTED */}
+          <div className="mt-32 grid md:grid-cols-2 gap-16 items-center">
+            {/* LEFT TEXT */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+            >
+              <h4 className="text-2xl md:text-3xl font-medium tracking-tight text-zinc-900">
+                And it doesn't stop there.
+              </h4>
+              <p className="mt-5 text-zinc-600 text-lg leading-relaxed">
+                Most companies now route applications through third-party
+                applicant tracking systems.
+              </p>
+              <p className="mt-4 text-zinc-500 leading-relaxed">
+                Your data passes through their processors before anyone at the
+                company even sees it, governed by their retention and
+                data-sharing rules, not yours. And a resume is rarely all they
+                collect.
+              </p>
+            </motion.div>
+
+            {/* RIGHT CARD */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="relative rounded-2xl border border-[#8B6FC7]/20 bg-gradient-to-b from-[#F7F5FB] to-white p-8"
+            >
+              <p className="text-sm font-medium text-zinc-900">
+                What a single application can quietly collect
+              </p>
+
+              <ul className="mt-6 space-y-4">
+                {[
+                  { icon: Globe, label: "IP address" },
+                  { icon: Monitor, label: "Device and browser information" },
+                  { icon: MapPin, label: "Location" },
+                  {
+                    icon: Activity,
+                    label: "Behavioral tracking, especially on ATS platforms",
+                  },
+                ].map((row, i) => (
+                  <li key={i} className="flex items-center gap-3.5">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#8B6FC7]/10 text-[#4C3575]">
+                      <row.icon className="h-4 w-4" strokeWidth={1.75} />
+                    </span>
+                    <span className="text-sm text-zinc-600">{row.label}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* subtle ambient glow, matches hero palette */}
+              <div className="absolute -inset-4 -z-10 bg-gradient-to-tr from-[#8B6FC7]/10 to-transparent blur-2xl" />
+            </motion.div>
           </div>
         </div>
       </section>
