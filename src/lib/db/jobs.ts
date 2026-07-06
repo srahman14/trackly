@@ -110,11 +110,17 @@ export async function updateJob(
     .update({ ...input, updated_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId)
-    .select("*, company:companies(*)")
-    .single();
+    .select("*, company:companies(*)");
 
   if (error) throw new ApiError(500, "Failed to update job");
-  return data as JobWithCompany;
+
+  // silent-RLS-block risk: a matched-zero-rows update
+  // doesn't error, it just returns an empty array — treat that as a failure
+  if (!data || data.length === 0) {
+    throw new ApiError(500, "Update failed: no rows affected (check RLS policy)");
+  }
+
+  return data[0] as JobWithCompany;
 }
 
 export async function deleteJob(
