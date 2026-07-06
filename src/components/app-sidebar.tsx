@@ -42,6 +42,8 @@ import { useRouter } from "next/navigation";
 import { ModeToggle } from "./theme-toggle";
 import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+import { requireUser } from "@/lib/api/auth";
 
 // Menu items.
 const platformItems = [
@@ -82,7 +84,6 @@ const applicationItems = [
 
 export function AppSidebar() {
   const router = useRouter();
-  const { theme } = useTheme();
   const supabase = createClient();
 
   const handleSignout = () => {
@@ -90,20 +91,23 @@ export function AppSidebar() {
     router.push("/");
   };
 
-  let logoSrc =
-    theme === "light"
-      ? "/icons/watermark-logo-dark.svg"
-      : "/icons/watermark-logo-light.svg";
-
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader className="pt-4 flex flex-row items-center justify-between px-3">
         <Image
-          src={logoSrc}
+          src={"/icons/watermark-logo-dark.svg"}
           alt="icon"
           width={140}
           height={48}
-          className="object-contain shrink-0 cursor-default"
+          className="block dark:hidden object-contain shrink-0 cursor-default"
+          priority
+        />
+        <Image
+          src={"/icons/watermark-logo-light.svg"}
+          alt="icon"
+          width={140}
+          height={48}
+          className="hidden dark:block object-contain shrink-0 cursor-default"
           priority
         />
         <ModeToggle />
