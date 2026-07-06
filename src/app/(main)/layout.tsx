@@ -2,6 +2,7 @@ import Navbar from "@/components/navbar";
 import type { Metadata } from "next";
 import "../globals.css";
 import Footer from "@/components/footer";
+import SmoothScroll from "@/components/smooth-scroll";
 
 export const metadata: Metadata = {
   title: "trackly",
@@ -15,9 +16,11 @@ export default function LandingLayout({
 }>) {
   return (
     <div>
+      <SmoothScroll>
         <Navbar />
         {children}
         <Footer />
+      </SmoothScroll>
     </div>
   );
 }
