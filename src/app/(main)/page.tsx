@@ -165,7 +165,7 @@ export default function Home() {
             >
               {[
                 {
-                  stat: "9%",
+                  stat: "~0.5%",
                   copy: "of applicants say they always read a privacy policy before submitting their information.",
                 },
                 {
@@ -177,7 +177,7 @@ export default function Home() {
                   copy: "of job platforms share or sell applicant data with third parties.",
                 },
                 {
-                  stat: "1–4 yrs",
+                  stat: "1–6 yrs",
                   copy: "how long employers are required to retain your resume and application data, depending on jurisdiction.",
                 },
               ].map((item, i) => (
@@ -231,7 +231,7 @@ export default function Home() {
               </p>
               <p className="mt-4 text-zinc-500 leading-relaxed">
                 Your data passes through their processors before anyone at the
-                company even sees it, governed by their retention and
+                {/* company even sees it, governed by their retention and */}
                 data-sharing rules, not yours. And a resume is rarely all they
                 collect.
               </p>

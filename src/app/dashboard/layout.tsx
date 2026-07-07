@@ -3,6 +3,7 @@ import "../globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "trackly | dashboard",
@@ -25,6 +26,7 @@ export default function DashboardLayout({
         <AppSidebar />
         <main className="flex w-full min-w-0 flex-1 flex-col">{children}</main>
       </SidebarProvider>
+      <Toaster position="top-right" reverseOrder={false} />
     </ThemeProvider>
   );
 }

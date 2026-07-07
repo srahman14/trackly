@@ -1,90 +1,98 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
-import { JobsMetrics } from "../../../components/JobsMetrics"
-import { FilterBar } from "../../../components/FilterBar"
-import { JobsTable } from "../../../components/JobsTable"
-import { PaginationControls } from "../../../components/Pagination"
-import { JobFormModal } from "../../../components/JobFormModal"
-import { DeleteJobDialog } from "../../../components/DeleteJobDialog"
-import { fetchJobs, createJob, updateJob, deleteJob } from "@/lib/api/jobs"
-import type { CreateJobPayload, Pagination } from "@/lib/api/jobs"
-import type { JobStatus, JobWithCompany } from "@/types/database"
+import { useCallback, useEffect, useState } from "react";
+import { JobsMetrics } from "../../../components/JobsMetrics";
+import { FilterBar } from "../../../components/FilterBar";
+import { JobsTable } from "../../../components/JobsTable";
+import { PaginationControls } from "../../../components/Pagination";
+import { JobFormModal } from "../../../components/JobFormModal";
+import { DeleteJobDialog } from "../../../components/DeleteJobDialog";
+import { fetchJobs, createJob, updateJob, deleteJob } from "@/lib/api/jobs";
+import type { CreateJobPayload, Pagination } from "@/lib/api/jobs";
+import type { JobStatus, JobWithCompany } from "@/types/database";
+import { Button } from "@/components/ui/button";
+import { DeleteToast } from "@/components/custom-toasts";
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 10;
 
 export default function JobsPage() {
-  const [jobs, setJobs] = useState<JobWithCompany[]>([])
+  const [jobs, setJobs] = useState<JobWithCompany[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
     limit: PAGE_SIZE,
     total: 0,
     totalPages: 0,
-  })
-  const [status, setStatus] = useState<JobStatus | "all">("all")
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [refreshKey, setRefreshKey] = useState(0)
+  });
+  const [status, setStatus] = useState<JobStatus | "all">("all");
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null)
-  const [activeJob, setActiveJob] = useState<JobWithCompany | undefined>(undefined)
-  const [pendingDelete, setPendingDelete] = useState<JobWithCompany | null>(null)
+  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
+  const [activeJob, setActiveJob] = useState<JobWithCompany | undefined>(
+    undefined,
+  );
+  const [pendingDelete, setPendingDelete] = useState<JobWithCompany | null>(
+    null,
+  );
 
   const loadJobs = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
       const result = await fetchJobs({
         status: status === "all" ? undefined : status,
         page,
         limit: PAGE_SIZE,
-      })
-      setJobs(result.jobs)
-      setPagination(result.pagination)
+      });
+      setJobs(result.jobs);
+      setPagination(result.pagination);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load applications")
+      setError(
+        err instanceof Error ? err.message : "Failed to load applications",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [status, page])
+  }, [status, page]);
 
   useEffect(() => {
-    loadJobs()
-  }, [loadJobs])
+    loadJobs();
+  }, [loadJobs]);
 
   function handleStatusChange(next: JobStatus | "all") {
-    setStatus(next)
-    setPage(1)
+    setStatus(next);
+    setPage(1);
   }
 
   function openCreateModal() {
-    setActiveJob(undefined)
-    setModalMode("create")
+    setActiveJob(undefined);
+    setModalMode("create");
   }
 
   function openEditModal(job: JobWithCompany) {
-    setActiveJob(job)
-    setModalMode("edit")
+    setActiveJob(job);
+    setModalMode("edit");
   }
 
   async function handleFormSubmit(values: Partial<CreateJobPayload>) {
     if (modalMode === "create") {
-      await createJob(values as CreateJobPayload)
+      await createJob(values as CreateJobPayload);
     } else if (modalMode === "edit" && activeJob) {
-      await updateJob(activeJob.id, values)
+      await updateJob(activeJob.id, values);
     }
-    setModalMode(null)
-    setRefreshKey((k) => k + 1)
-    await loadJobs()
+    setModalMode(null);
+    setRefreshKey((k) => k + 1);
+    await loadJobs();
   }
 
   async function handleDeleteConfirm() {
-    if (!pendingDelete) return
-    await deleteJob(pendingDelete.id)
-    setPendingDelete(null)
-    setRefreshKey((k) => k + 1)
-    await loadJobs()
+    if (!pendingDelete) return;
+    await deleteJob(pendingDelete.id);
+    setPendingDelete(null);
+    setRefreshKey((k) => k + 1);
+    await loadJobs();
   }
 
   return (
@@ -92,8 +100,12 @@ export default function JobsPage() {
       <div className="mx-auto max-w-7xl px-6 py-10">
         <header className="mb-8 flex flex-col gap-4 border-b border-dashed border-zinc-300 pb-6 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Applications</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight">Job Board</h1>
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+              Applications
+            </p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+              Job Board
+            </h1>
           </div>
         </header>
 
@@ -117,8 +129,15 @@ export default function JobsPage() {
           </div>
         ) : (
           <>
-            <JobsTable jobs={jobs} onEdit={openEditModal} onDelete={setPendingDelete} />
-            <PaginationControls pagination={pagination} onPageChange={setPage} />
+            <JobsTable
+              jobs={jobs}
+              onEdit={openEditModal}
+              onDelete={setPendingDelete}
+            />
+            <PaginationControls
+              pagination={pagination}
+              onPageChange={setPage}
+            />
           </>
         )}
       </div>
@@ -139,6 +158,8 @@ export default function JobsPage() {
           onConfirm={handleDeleteConfirm}
         />
       )}
+
+      <Button onClick={() => DeleteToast("test")}>Click me</Button>
     </div>
-  )
+  );
 }

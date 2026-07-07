@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import type { JobStatus } from "@/types/database"
+import type { JobStatus } from "@/types/database";
 
 const STATUS_OPTIONS: { value: JobStatus | "all"; label: string }[] = [
   { value: "all", label: "All statuses" },
@@ -10,19 +10,26 @@ const STATUS_OPTIONS: { value: JobStatus | "all"; label: string }[] = [
   { value: "offer", label: "Offer" },
   { value: "rejected", label: "Rejected" },
   { value: "withdrawn", label: "Withdrawn" },
-]
+];
 
 interface FilterBarProps {
-  status: JobStatus | "all"
-  onStatusChange: (status: JobStatus | "all") => void
-  onNewApplication: () => void
+  status: JobStatus | "all";
+  onStatusChange: (status: JobStatus | "all") => void;
+  onNewApplication: () => void;
 }
 
-export function FilterBar({ status, onStatusChange, onNewApplication }: FilterBarProps) {
+export function FilterBar({
+  status,
+  onStatusChange,
+  onNewApplication,
+}: FilterBarProps) {
   return (
-    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mb-4 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <label htmlFor="status-filter" className="text-xs uppercase tracking-wide text-zinc-500">
+        <label
+          htmlFor="status-filter"
+          className="text-xs uppercase tracking-wide text-zinc-500"
+        >
           Filter
         </label>
         <select
@@ -45,5 +52,5 @@ export function FilterBar({ status, onStatusChange, onNewApplication }: FilterBa
         + New Application
       </button>
     </div>
-  )
+  );
 }
