@@ -31,3 +31,20 @@ export async function getMostRecentPrivacyDocument(
   if (error) throw new ApiError(500, 'Failed to look up existing privacy document');
   return data;
 }
+
+export async function getPrivacyDocumentById(supabase: SupabaseClient, id: string) {
+  const { data, error } = await supabase
+    .from('privacy_documents')
+    .select('id, company_id, source_url, raw_text')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) {
+    if (error.code === '22P02') {
+      throw new ApiError(400, 'Invalid privacy document id format');
+    }
+    throw new ApiError(500, 'Failed to fetch privacy document');
+  }
+  if (!data) throw new ApiError(404, 'Privacy document not found');
+  return data;
+}
