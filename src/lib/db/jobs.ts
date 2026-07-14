@@ -95,6 +95,22 @@ export async function getJobById(
   return data as JobWithCompany;
 }
 
+export async function getMostRecentJobUrlForCompany(
+  supabase: SupabaseClient,
+  companyId: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('job_url')
+    .eq('company_id', companyId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new ApiError(500, 'Failed to look up job for company');
+  return data?.job_url ?? null;
+}
+
 export async function updateJob(
   supabase: SupabaseClient,
   userId: string,

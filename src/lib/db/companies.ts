@@ -68,7 +68,31 @@ export async function getCompanyById(
     .eq("id", id)
     .maybeSingle();
 
-  if (error) throw new ApiError(500, "Failed to fetch company");
+  if (error) {
+    // Malformed UUID never reaches RLS/row-matching — Postgres rejects it
+    // at the query layer. That's a client mistake (bad id), not a server fault.
+    if (error.code === "22P02") {
+      throw new ApiError(400, "Invalid company id format");
+    }
+    throw new ApiError(500, "Failed to fetch company");
+  }
   if (!data) throw new ApiError(404, "Company not found");
   return data as Company;
+}
+
+export async function updateCompanyScanStatus(
+  supabase: SupabaseClient,
+  companyId: string,
+  updates: { privacy_scan_status: string; privacy_policy_url?: string }
+) {
+  const { data, error } = await supabase
+    .from('companies')
+    .update({ ...updates, last_scanned_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', companyId)
+    .select()
+    .single();
+
+  if (error) throw new ApiError(500, 'Failed to update company scan status');
+  if (!data) throw new ApiError(404, 'Company not found or update blocked by RLS');
+  return data;
 }
