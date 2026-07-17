@@ -1,3 +1,7 @@
+/**
+ * runPrivacyDiscovery.ts -> main purpose: given a company, find and stores its privacy policy page. Owns the freshness cache, robots check, and content-hash dedupe. Does not deal with extraction -> only finds and stores the privacy policy.
+ */
+
 import { SupabaseClient } from '@supabase/supabase-js';
 import { createHash } from 'node:crypto';
 import { ApiError } from '@/lib/api/errors';
@@ -16,10 +20,6 @@ export type PrivacyDiscoveryResult =
 
 const FRESHNESS_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
 
-function hash(text: string): string {
-  return createHash('sha256').update(text).digest('hex');
-}
-
 export async function runPrivacyDiscovery(
   supabase: SupabaseClient,
   companyId: string,
@@ -27,6 +27,7 @@ export async function runPrivacyDiscovery(
 ): Promise<PrivacyDiscoveryResult> {
   const company = await getCompanyById(supabase, companyId);
 
+  // if there exists a scan within the last 24hrs -> get the most recetn privacy document
   if (!options.force && company.last_scanned_at) {
     const age = Date.now() - new Date(company.last_scanned_at).getTime();
     if (age < FRESHNESS_WINDOW_MS) {
