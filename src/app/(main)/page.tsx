@@ -53,9 +53,9 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <h1 className="mt-6 text-4xl md:text-7xl font-semibold tracking-tight text-zinc-900">
-              Track your data
-              <span className="block text-zinc-500 font-medium">
+            <h1 className="mt-6 text-4xl md:text-7xl font-medium tracking-tighter text-black">
+              track your data
+              <span className="block tracking-tighter bg-clip-text text-transparent bg-[linear-gradient(120deg,#4C3575,#8B6FC7)] font-medium">
                 with every{" "}
                 <span className="text-black italic tracking-tighter">
                   application.
@@ -65,7 +65,7 @@ export default function Home() {
           </motion.div>
 
           {/* subtext */}
-          <p className="mt-6 text-lg text-zinc-600 max-w-2xl mx-auto">
+          <p className="mt-6 text-lg text-black font-medium max-w-xl mx-auto">
             A clean, private workspace to manage job applications, notes, and
             progress. Without trackers, ads, or data harvesting.
           </p>
