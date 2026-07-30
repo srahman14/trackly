@@ -7,20 +7,20 @@ import { AnimatePresence, motion } from "framer-motion";
 const faqs = [
   {
     q: "Is my data private?",
-    a: "Yes. Trackly is built with a privacy-first approach. Your data is not sold or shared with third parties."
+    a: "Yes. Trackly is built with a privacy-first approach. Your data is not sold or shared with third parties.",
   },
   {
     q: "Can I import applications from other platforms?",
-    a: "You can manually add applications from any source like LinkedIn, company websites, or referrals."
+    a: "You can manually add applications from any source like LinkedIn, company websites, or referrals.",
   },
   {
     q: "Do I need to connect my email?",
-    a: "Yes, to use Trackly's services you must use your email to sign up."
+    a: "Yes, to use Trackly's services you must use your email to sign up.",
   },
   {
     q: "Is Trackly free to use?",
-    a: "Yes, Trackly's services are free to use."
-  }
+    a: "Yes, Trackly's services are free to use.",
+  },
 ];
 
 export default function FAQ() {
@@ -28,10 +28,10 @@ export default function FAQ() {
 
   return (
     <section className="py-32 border-t">
-      <div className="mx-auto max-w-3xl px-6">
+      <div className="mx-24 max-w-full">
         {/* HEADER */}
         <div className="text-center">
-          <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-900">
+          <h2 className="text-4xl md:text-4xl font-medium tracking-tight text-zinc-900">
             Frequently asked questions
           </h2>
 
@@ -48,11 +48,11 @@ export default function FAQ() {
             return (
               <div
                 key={i}
-                className="rounded-xl border bg-white p-5 cursor-pointer"
+                className="rounded-xl w-full border-b bg-white p-3 cursor-pointer"
                 onClick={() => setOpen(isOpen ? null : i)}
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="font-medium text-zinc-900">
+                  <h3 className="font-medium text-xl text-zinc-900">
                     {item.q}
                   </h3>
 
@@ -75,9 +75,7 @@ export default function FAQ() {
                       transition={{ duration: 0.25, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <p className="mt-3 text-sm text-zinc-600">
-                        {item.a}
-                      </p>
+                      <p className="mt-3 text-sm text-zinc-600">{item.a}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
