@@ -827,7 +827,7 @@ export default function Home() {
       className={`${mono.variable} ${sans.variable} min-h-screen bg-white font-[family-name:var(--font-sans)] text-gray-900`}
     >
       {/* ============================= HERO (unchanged palette) ============================= */}
-      <section className="relative overflow-hidden bg-[#0E0F0D]">
+      <section className="relative pb-24 overflow-hidden bg-[#0E0F0D]">
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.025)_0px,rgba(255,255,255,0.025)_1px,transparent_1px,transparent_3px)]" />
         <motion.div
           className="pointer-events-none absolute top-0 h-full w-40 bg-gradient-to-r from-transparent via-[#C99A2E]/10 to-transparent motion-reduce:hidden"
