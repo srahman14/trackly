@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react"
-import { StatusStamp } from "../../../../components/StatusStamp"
-import { JobFormModal } from "../../../../components/JobFormModal"
-import { DeleteJobDialog } from "../../../../components/DeleteJobDialog"
+import { ArrowLeft, Pencil, RefreshCw, Trash2 } from "lucide-react"
+import { StatusStamp } from "@/components/StatusStamp"
+import { JobFormModal } from "@/components/JobFormModal"
+import { DeleteJobDialog } from "@/components/DeleteJobDialog"
 import { fetchJob, updateJob, deleteJob } from "@/lib/api/jobs"
 import type { CreateJobPayload } from "@/lib/api/jobs"
 import type { JobWithCompany } from "@/types/database"
+import { fetchCompanyPrivacySummary, triggerCompanyAnalysis } from "@/lib/api/companies"
 
 export default function JobDetailPage() {
   const params = useParams<{ id: string }>()
@@ -20,6 +21,10 @@ export default function JobDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const [privacySummary, setPrivacySummary] = useState<Awaited<ReturnType<typeof fetchCompanyPrivacySummary>>>(null)
+  const [privacyLoading, setPrivacyLoading] = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -43,6 +48,45 @@ export default function JobDetailPage() {
       cancelled = true
     }
   }, [params.id])
+
+  useEffect(() => {
+    if (!job?.company?.id) return
+    let cancelled= false
+
+    async function loadPrivacy() {
+      setPrivacyLoading(true)
+      try {
+        const summary = await fetchCompanyPrivacySummary(job!.company!.id)
+        if (!cancelled) setPrivacySummary(summary)
+      } catch {
+        // just shows "pending" state if this fails
+      } finally {
+        if (!cancelled) setPrivacyLoading(false)
+      }
+    }
+
+    loadPrivacy()
+    return () => {
+      cancelled = true
+    }
+  }, [job?.company?.id])
+
+  async function handleAnalyze() {
+    if (!job?.company?.id) return
+    setAnalyzing(true)
+
+    try {
+      await triggerCompanyAnalysis(job.company.id)
+      const summary = await fetchCompanyPrivacySummary(job.company.id)
+      setPrivacySummary(summary)
+      const refreshedJob = await fetchJob(params.id)
+      setJob(refreshedJob)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Analysis failed")
+    } finally {
+      setAnalyzing(false)
+    }
+  }
 
   async function handleUpdate(values: Partial<CreateJobPayload>) {
     const updated = await updateJob(params.id, values)
@@ -76,6 +120,9 @@ export default function JobDetailPage() {
       </div>
     )
   }
+
+  const scanStatus = job.company?.privacy_scan_status ?? "not_scanned"
+  const entity = privacySummary?.entity ?? null
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAF7] font-mono text-zinc-900 dark:bg-[#0B0D0F] dark:text-zinc-100">
@@ -143,42 +190,110 @@ export default function JobDetailPage() {
 
           {/* Company / privacy intelligence panel — placeholder until scraping exists */}
           <section className="rounded-md border border-dashed border-zinc-300 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-950">
-            <p className="mb-3 text-xs uppercase tracking-wide text-zinc-500">
-              Employer file — {job.company?.name ?? "Unlinked"}
-            </p>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wide text-zinc-500">
+                Employer file — {job.company?.name ?? "Unlinked"}
+              </p>
+              <button
+                onClick={handleAnalyze}
+                disabled={analyzing || !job.company?.id}
+                className="inline-flex items-center gap-1 rounded border border-zinc-300 px-2 py-1 text-[10px] uppercase tracking-wide text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                >
+                <RefreshCw className={`h-3 w-3 ${analyzing ? "animate-spin" : ""}`} />
+                {analyzing ? "Analyzing…" : scanStatus === "found" ? "Re-analyze" : "Analyze"}
+              </button>
+            </div>
+
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="text-xs text-zinc-400">Domain</dt>
-                <dd>{job.company?.domain ?? "—"}</dd>
+                <dt className="text-xs text-zinc-400">Scan status</dt>
+                <dd>
+                  <span className="inline-flex items-center rounded border border-zinc-300 bg-zinc-50 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900">
+                    {scanStatus.replace("_", " ")}
+                  </span>
+                </dd>
               </div>
+
               <div>
                 <dt className="text-xs text-zinc-400">Privacy policy</dt>
                 <dd>
                   {job.company?.privacy_policy_url ? (
                     <a
-                      href={job.company.privacy_policy_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline dark:text-blue-400"
+                    href={job.company.privacy_policy_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline dark:text-blue-400"
                     >
                       {job.company.privacy_policy_url}
                     </a>
                   ) : (
-                    <span className="inline-flex items-center rounded border border-zinc-300 bg-zinc-50 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900">
-                      Pending analysis
+                    <span className="text-xs text-zinc-400">
+                      {privacyLoading ? "Checking…" : "Not yet found."}
                     </span>
                   )}
                 </dd>
               </div>
-              <div>
-                <dt className="text-xs text-zinc-400">Retention &amp; erasure</dt>
-                <dd className="text-xs text-zinc-400">
-                  Not yet scraped — this section populates once the privacy intelligence
-                  pipeline processes this employer.
-                </dd>
-              </div>
+
+              {entity && (
+                <>
+                  <div>
+                    <dt className="text-xs text-zinc-400">Privacy score</dt>
+                    <dd className="font-semibold">{entity.privacy_score ?? "—"} / 100</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-zinc-400">Retention period</dt>
+                    <dd className="text-zinc-600 dark:text-zinc-400">
+                      {entity.retention_period ?? "Not stated in the policy."}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-zinc-400">DPO / privacy contact</dt>
+                    <dd>{entity.dpo_email ?? entity.contact_email ?? "Not found."}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-zinc-400">Data request link</dt>
+                    <dd>
+                      {entity.data_request_url ? (
+                        <a  
+                        href={entity.data_request_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline dark:text-blue-400"
+                        >
+                          {entity.data_request_url}
+                        </a>
+                      ) : (
+                        "Not found."
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-zinc-400">Third-party sharing / AI screening detected</dt>
+                    <dd className="text-xs text-zinc-500">
+                      {entity.shares_with_third_parties ? "Sharing mentioned. " : "No sharing mentioned. "}
+                      {entity.uses_ai_screening ? "AI screening mentioned." : "No AI screening mentioned."}
+                      <span className="block text-zinc-400">(auto-detected — verify against source)</span>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-zinc-400">Summary</dt>
+                    <dd className="text-zinc-600 dark:text-zinc-400">{entity.summary}</dd>
+                  </div>
+                </>
+              )}
+
+              {!entity && !privacyLoading && scanStatus === "not_found" && (
+                <p className="text-xs text-zinc-400">
+                  No privacy policy link was found on this employer's job posting page.
+                </p>
+              )}
+              {!entity && !privacyLoading && scanStatus === "error" && (
+                <p className="text-xs text-rose-500">
+                  The last scan failed. Try "Re-analyze," or set a privacy policy URL manually.
+                </p>
+              )}
             </dl>
-          </section>
+            </section>
         </div>
       </div>
 

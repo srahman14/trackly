@@ -7,6 +7,8 @@ export interface ExtractedPrivacyEntities {
   dataRequestUrl: string | null;
   sharesWithThirdParties: boolean | null;
   usesAiScreening: boolean | null;
+  privacyScore: number;
+  summary: string;
 }
 
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
@@ -28,7 +30,7 @@ export function extractPrivacyEntities(input: ExtractionInput): ExtractedPrivacy
     dpoEmail = contactEmail;
   }
 
-  return {
+  const fields = {
     dpoEmail,
     contactEmail,
     retentionPeriod: findSectionText(input, RETENTION_KEYWORDS),
@@ -36,6 +38,12 @@ export function extractPrivacyEntities(input: ExtractionInput): ExtractedPrivacy
     sharesWithThirdParties: containsAny(input.fullText, THIRD_PARTY_KEYWORDS),
     usesAiScreening: containsAny(input.fullText, AI_SCREENING_KEYWORDS),
   };
+
+  return {
+    ...fields,
+    privacyScore: computePrivacyScore(fields),
+    summary: buildSummary(fields),
+  }
 }
 
 // Absence of a keyword isn't evidence the answer is "no" — a policy that
@@ -93,4 +101,30 @@ function findDataRequestUrl(input: ExtractionInput): string | null {
     DATA_REQUEST_LINK_KEYWORDS.some((kw) => l.text.toLowerCase().includes(kw))
   );
   return link?.href ?? null;
+}
+
+function computePrivacyScore(fields: Omit<ExtractedPrivacyEntities, 'privacyScore' | 'summary'>): number {
+  // Base score
+  let score = 50; 
+  if (fields.retentionPeriod) score += 15;
+  if (fields.dpoEmail || fields.contactEmail) score += 15;
+  if (fields.dataRequestUrl) score += 15;
+  if (fields.sharesWithThirdParties) score -= 15;
+  if (fields.usesAiScreening) score -= 15;
+
+  return Math.max(0, Math.min(100, score))
+}
+
+function buildSummary(fields: Omit<ExtractedPrivacyEntities, 'privacyScore' | 'summary'>) { 
+  const lines: string[] = [];
+  lines.push(fields.retentionPeriod ? 'States a data retention period.' : 'No retention period stated.');
+  lines.push(
+    fields.dpoEmail || fields.contactEmail
+      ? `Privacy/DPO contact listed: ${fields.dpoEmail ?? fields.contactEmail}.`
+      : 'No privacy or DPO contact found.'
+  );
+  lines.push(fields.dataRequestUrl ? 'Provides a data request / erasure link.' : 'No dedicated data request link found.');
+  lines.push(fields.sharesWithThirdParties ? 'Mentions sharing data with third parties.' : 'No third-party sharing detected.');
+  lines.push(fields.usesAiScreening ? 'Mentions automated/AI-based screening.' : 'No AI screening mentioned.');
+  return lines.join(' ');
 }
