@@ -36,7 +36,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
     throw new Error(message)
   }
 
-  return body.data as T
+  return body.data as T 
 }
 
 export async function fetchJobs(filters: JobListFilters = {}): Promise<JobListResult> {

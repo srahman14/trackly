@@ -1,18 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { ApplicationsChart } from "@/components/applications-chart"
 import {
-  FileText,
-  XCircle,
-  Gauge,
-  Plus,
-  Send,
-  Search,
-  Clock,
   AlertTriangle,
   ArrowUpRight,
+  Clock,
+  FileText,
+  Gauge,
+  Plus,
+  Search,
+  Send,
+  XCircle,
 } from "lucide-react"
-import { ApplicationsChart } from "@/components/applications-chart"
+import { useEffect, useState } from "react"
 
 // --- Mock data — swap for real queries once the DB layer is wired up ---
 const metrics = [

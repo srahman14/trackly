@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "react-hot-toast";
+import { GlobalCommandPalette } from "@/components/GlobalCommandPalette";
 
 export const metadata: Metadata = {
   title: "trackly | dashboard",
@@ -22,6 +23,7 @@ export default function DashboardLayout({
       enableSystem
       disableTransitionOnChange
     >
+      <GlobalCommandPalette />
       <SidebarProvider>
         <AppSidebar />
         <main className="flex w-full min-w-0 flex-1 flex-col">{children}</main>
