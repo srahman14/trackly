@@ -57,7 +57,7 @@ const sources: Source[] = [
 const SourcesPage = () => {
   return (
     <div className="mx-auto max-w-3xl px-6 py-24">
-      <p className="text-sm font-medium tracking-wide text-[#4C3575] uppercase">
+      <p className="text-sm font-medium tracking-wide text-red-600 uppercase">
         Sources
       </p>
       <h1 className="mt-3 text-3xl md:text-4xl font-medium tracking-tight text-zinc-900">
@@ -76,7 +76,7 @@ const SourcesPage = () => {
             className="pb-10 border-b border-zinc-200 last:border-none"
           >
             <div className="flex items-baseline gap-3">
-              <span className="text-2xl font-semibold tracking-tight bg-clip-text text-transparent bg-[linear-gradient(120deg,#4C3575,#8B6FC7)]">
+              <span className="text-2xl font-semibold tracking-tight text-red-600/60">
                 {source.stat}
               </span>
               <p className="text-sm text-zinc-600">{source.claim}</p>

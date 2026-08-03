@@ -13,6 +13,8 @@ export interface Company {
   privacy_policy_url: string | null
   created_at: string
   updated_at: string
+  privacy_scan_status: string
+  last_scanned_at: string
 }
 
 export interface Job {

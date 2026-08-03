@@ -138,7 +138,7 @@ export function AuthShell({
     <main className="grid min-h-dvh lg:grid-cols-2">
       <BrandPanel variant={variant} />
       <div className="flex flex-col px-6 py-8 sm:px-10">
-        <div className="flex flex-1 items-start justify-center py-4 lg:items-center lg:py-10">
+        <div className="flex flex-1 items-start justify-center pb-4 md:items-center lg:py-10">
           <div className="animate-rise w-full max-w-md">{children}</div>
         </div>
       </div>
