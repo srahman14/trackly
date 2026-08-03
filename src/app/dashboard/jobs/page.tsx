@@ -158,8 +158,6 @@ export default function JobsPage() {
           onConfirm={handleDeleteConfirm}
         />
       )}
-
-      <Button onClick={() => DeleteToast("test")}>Click me</Button>
     </div>
   );
 }

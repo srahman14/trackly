@@ -704,8 +704,42 @@ function MiniKanban() {
               {label}
             </p>
             {i === 0 && (
-              <div className="mb-2 truncate rounded-sm border border-gray-200 bg-white px-1.5 py-1.5 text-[10px] text-gray-400 sm:px-2.5 sm:text-xs">
-                Northfield
+              <div>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-orange-200 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Northfield
+                </p>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-orange-200 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Iris & Co
+                </p>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-orange-200 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Marrows
+                </p>
+              </div>
+            )}
+            {i === 1 && (
+              <div>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-amber-400 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Corvid's Lab
+                </p>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-amber-400 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Fernbank
+                </p>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-amber-400 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Loopwell
+                </p>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-amber-400 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Halycon System
+                </p>
+              </div>
+            )}
+            {i === 2 && (
+              <div>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-emerald-300 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Corvid's
+                </p>
+                <p className="mb-2 truncate rounded-sm border border-gray-200 bg-emerald-300 px-1.5 py-1.5 text-[10px] text-black sm:px-2.5 sm:text-xs">
+                  Fernbank
+                </p>
               </div>
             )}
             {col === i && (
