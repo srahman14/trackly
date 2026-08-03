@@ -13,6 +13,7 @@ import {
   Activity,
   X,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 
@@ -37,9 +38,9 @@ const sans = IBM_Plex_Sans({
    defaults only: white / black / gray, plus red-600 (risk/flag) and
    emerald-600 (clear/verified) as the only two accents.
 
-   All company names used below the hero are fictional (Fernbank, Halcyon,
-   Loopwell, Northfield, Corvid Labs, Kestrel & Co, Marrow, Iris & Co) to
-   avoid referencing real employers.
+   All company names used below the hero are fictional (Fernbank, Halcyon
+   Systems, Loopwell, Northfield, Marrow, Iris & Co) to avoid referencing
+   real employers.
 ------------------------------------------------------------------------- */
 
 /* ============================ LIVE SCAN TERMINAL ==========================
@@ -415,46 +416,84 @@ function CollectedDataScanner() {
   );
 }
 
-/* ================================ FOLLOW-UP PANEL ===========================
-   Now the primary visual for "That's where Trackly comes in" — enlarged to
-   fill the role the notification feed used to play. The most urgent row
-   pulses; click a row to check it off. Fixed-height, overflow-hidden shell
-   keeps its footprint constant so the heading beside it never shifts.
+/* ================================ DASHBOARD PREVIEW ==========================
+   Primary visual for "That's where Trackly comes in". Fully self-animating —
+   metrics count up on mount, and one row's pipeline stage advances on its
+   own loop, so it reads as a living snapshot of the whole product (tracking
+   + privacy score) rather than a single feature.
 ============================================================================ */
 
-interface FollowUp {
+interface JobRow {
   id: string;
   company: string;
-  days: number;
+  status: "Applied" | "Interview" | "Offer";
+  score: number;
 }
 
-const FOLLOW_UPS: FollowUp[] = [
-  { id: "f1", company: "Fernbank", days: 1 },
-  { id: "f2", company: "Halcyon Systems", days: 4 },
-  { id: "f3", company: "Loopwell", days: 9 },
-  { id: "f4", company: "Kestrel & Co", days: 16 },
+const STATUS_CYCLE: JobRow["status"][] = ["Applied", "Interview", "Offer"];
+
+const STATUS_STYLE: Record<JobRow["status"], string> = {
+  Applied: "bg-gray-100 text-gray-600",
+  Interview: "bg-gray-900 text-white",
+  Offer: "bg-emerald-100 text-emerald-700",
+};
+
+const INITIAL_ROWS: JobRow[] = [
+  { id: "r1", company: "Fernbank", status: "Interview", score: 54 },
+  { id: "r2", company: "Halcyon Systems", status: "Applied", score: 41 },
+  { id: "r3", company: "Loopwell", status: "Offer", score: 88 },
 ];
 
-function FollowUpPanel() {
-  const [handled, setHandled] = useState<Set<string>>(new Set());
-  const sorted = [...FOLLOW_UPS].sort(
-    (a, b) => (handled.has(a.id) ? 1 : 0) - (handled.has(b.id) ? 1 : 0),
-  );
+function MetricChip({ label, target }: { label: string; target: number }) {
+  const [value, setValue] = useState(0);
 
-  function toggle(id: string) {
-    setHandled((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
+  useEffect(() => {
+    let raf: number;
+    const start = performance.now();
+    const duration = 900;
+    function tick(now: number) {
+      const progress = Math.min((now - start) / duration, 1);
+      setValue(Math.round(progress * target));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+    <div className="min-w-0 flex-1 rounded-md border border-gray-100 bg-gray-50 px-2 py-2.5 text-center">
+      <p className="font-[family-name:var(--font-mono)] text-lg font-semibold text-gray-900">
+        {value}
+      </p>
+      <p className="truncate text-[9px] text-gray-500 sm:text-[10px]">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function DashboardPreview() {
+  const [rows, setRows] = useState<JobRow[]>(INITIAL_ROWS);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setRows((prev) =>
+        prev.map((r, i) => {
+          if (i !== 1) return r;
+          const nextIdx =
+            (STATUS_CYCLE.indexOf(r.status) + 1) % STATUS_CYCLE.length;
+          return { ...r, status: STATUS_CYCLE[nextIdx] };
+        }),
+      );
+    }, 3200);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="flex h-[380px] w-full min-w-0 flex-col rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
       <div className="flex items-center justify-between border-b border-gray-100 pb-3">
         <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-gray-500">
-          Follow-ups
+          Dashboard
         </span>
         <span className="flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] text-emerald-600">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-600 motion-reduce:animate-none" />
@@ -462,71 +501,49 @@ function FollowUpPanel() {
         </span>
       </div>
 
-      <div className="relative mt-4 h-[296px] overflow-hidden">
-        <ul className="space-y-2.5">
-          <AnimatePresence initial={false}>
-            {sorted.map((f) => {
-              const isHandled = handled.has(f.id);
-              const isUrgent = !isHandled && f.days <= 2;
-              return (
-                <motion.li
-                  key={f.id}
-                  layout
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                >
-                  <button
-                    onClick={() => toggle(f.id)}
-                    className={`flex w-full items-center justify-between rounded-md border-l-4 px-4 py-3.5 text-left text-sm transition-colors ${
-                      isHandled
-                        ? "border-emerald-600 bg-gray-50 text-gray-400"
-                        : isUrgent
-                          ? "border-red-600 bg-gray-50 text-gray-900"
-                          : "border-gray-300 bg-gray-50 text-gray-900"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2.5">
-                      <span
-                        className={`flex h-4.5 w-4.5 items-center justify-center rounded-full border ${
-                          isHandled
-                            ? "border-emerald-600 bg-emerald-600 text-white"
-                            : "border-gray-300"
-                        }`}
-                      >
-                        {isHandled && (
-                          <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                        )}
-                      </span>
-                      <span className={isHandled ? "line-through" : ""}>
-                        {f.company}
-                      </span>
-                    </span>
-                    <span className="relative flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] text-gray-500">
-                      {isUrgent && (
-                        <motion.span
-                          animate={{ scale: [1, 1.6], opacity: [0.6, 0] }}
-                          transition={{ duration: 1.4, repeat: Infinity }}
-                          className="absolute -left-3 h-2 w-2 rounded-full bg-red-500 motion-reduce:hidden"
-                        />
-                      )}
-                      {!isHandled && isUrgent && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                      )}
-                      {isHandled ? "done" : `${f.days}d ago`}
-                    </span>
-                  </button>
-                </motion.li>
-              );
-            })}
-          </AnimatePresence>
-        </ul>
+      <div className="mt-4 flex gap-2">
+        <MetricChip label="Applied" target={24} />
+        <MetricChip label="Interviewing" target={6} />
+        <MetricChip label="Offers" target={2} />
       </div>
+
+      <ul className="mt-4 flex flex-1 flex-col justify-center gap-2 overflow-hidden">
+        {rows.map((r) => (
+          <li
+            key={r.id}
+            className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-gray-100 bg-gray-50 px-3 py-2.5"
+          >
+            <span className="min-w-0 truncate text-xs font-medium text-gray-900">
+              {r.company}
+            </span>
+            <span className="flex shrink-0 items-center gap-2">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={r.status}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.2 }}
+                  className={`whitespace-nowrap rounded-full px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.05em] ${STATUS_STYLE[r.status]}`}
+                >
+                  {r.status}
+                </motion.span>
+              </AnimatePresence>
+              <span
+                className={`h-1.5 w-1.5 shrink-0 rounded-full ${r.score >= 70 ? "bg-emerald-600" : "bg-red-600"}`}
+              />
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
 /* =============================== NOTIFICATION FEED ===========================
-   Now lives in "Everything in one place" — UI only, no internal caption text.
-   Its title/description are rendered below it by the parent grid instead.
+   Lives in "Everything in one place" — UI only, no internal caption text.
+   Fixed height + flex-1 inner area keeps it the same height as its siblings
+   on every screen size.
 ============================================================================ */
 
 interface Notif {
@@ -606,7 +623,7 @@ function NotificationFeed() {
   const visible = queue.slice(0, 3);
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+    <div className="flex h-[360px] w-full min-w-0 flex-col rounded-2xl border border-gray-200 bg-white p-6">
       <div className="flex items-center justify-between border-b border-gray-100 pb-3">
         <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-gray-500">
           Activity
@@ -617,7 +634,7 @@ function NotificationFeed() {
         </span>
       </div>
 
-      <div className="relative mt-4 h-[280px] overflow-hidden">
+      <div className="relative mt-4 flex-1 overflow-hidden">
         <div className="space-y-2.5">
           <AnimatePresence initial={false}>
             {visible.map((n) => (
@@ -629,16 +646,16 @@ function NotificationFeed() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 60, position: "absolute" }}
                 transition={{ type: "spring", stiffness: 300, damping: 28 }}
-                className={`flex w-full items-start gap-3 rounded-md border-l-4 bg-gray-50 px-3.5 py-3 text-left shadow-sm ${TONE_STYLE[n.tone].border}`}
+                className={`flex w-full min-w-0 items-start gap-3 rounded-md border-l-4 bg-gray-50 px-3.5 py-3 text-left shadow-sm ${TONE_STYLE[n.tone].border}`}
               >
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
                     <span
-                      className={`font-[family-name:var(--font-mono)] text-[9px] tracking-[0.1em] ${TONE_STYLE[n.tone].text}`}
+                      className={`shrink-0 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.1em] ${TONE_STYLE[n.tone].text}`}
                     >
                       {TONE_STYLE[n.tone].label}
                     </span>
-                    <span className="text-xs font-semibold text-gray-900">
+                    <span className="truncate text-xs font-semibold text-gray-900">
                       {n.title}
                     </span>
                   </div>
@@ -657,8 +674,9 @@ function NotificationFeed() {
 }
 
 /* ================================= MINI KANBAN ==============================
-   UI only — no internal caption text. Card drifts across stages on its own
-   loop; click it to advance it manually via the shared layoutId.
+   UI only — no internal caption text. `min-w-0` on every column is what
+   stops long words ("Interview", "Northfield") from forcing the grid wider
+   than the viewport on small screens.
 ============================================================================ */
 
 const KANBAN_COLUMNS = ["Applied", "Interview", "Offer"];
@@ -675,18 +693,18 @@ function MiniKanban() {
   }, []);
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6">
-      <div className="grid grid-cols-3 gap-2.5">
+    <div className="flex h-[360px] w-full min-w-0 flex-col rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="grid min-w-0 flex-1 grid-cols-3 gap-1.5 sm:gap-2.5">
         {KANBAN_COLUMNS.map((label, i) => (
           <div
             key={label}
-            className="min-h-[240px] rounded-md border border-dashed border-gray-200 bg-gray-50 p-2.5"
+            className="flex min-w-0 flex-col rounded-md border border-dashed border-gray-200 bg-gray-50 p-1.5 sm:p-2.5"
           >
-            <p className="mb-2.5 text-center font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.1em] text-gray-400">
+            <p className="mb-2 truncate text-center font-[family-name:var(--font-mono)] text-[8px] uppercase tracking-[0.08em] text-gray-400 sm:text-[9px] sm:tracking-[0.1em]">
               {label}
             </p>
             {i === 0 && (
-              <div className="mb-2 rounded-sm border border-gray-200 bg-white px-2.5 py-2 text-xs text-gray-400">
+              <div className="mb-2 truncate rounded-sm border border-gray-200 bg-white px-1.5 py-1.5 text-[10px] text-gray-400 sm:px-2.5 sm:text-xs">
                 Northfield
               </div>
             )}
@@ -695,7 +713,7 @@ function MiniKanban() {
                 layoutId="kanban-card"
                 onClick={() => setCol((c) => (c + 1) % KANBAN_COLUMNS.length)}
                 transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                className="w-full rounded-sm border border-red-600 bg-red-50 px-2.5 py-2 text-left text-xs font-medium text-gray-900"
+                className="w-full min-w-0 truncate rounded-sm border border-red-600 bg-red-50 px-1.5 py-1.5 text-left text-[10px] font-medium text-gray-900 sm:px-2.5 sm:text-xs"
               >
                 Fernbank
               </motion.button>
@@ -707,74 +725,167 @@ function MiniKanban() {
   );
 }
 
-/* =============================== MINI SCORE DIAL =============================
-   UI only — no internal caption text. Pick a company chip to see the ring
-   animate to its score.
+/* ============================== PRIVACY ALERT PANEL ==========================
+   Replaces the score dial. Simulates the actual moment a scan flags a
+   company: an alert banner appears, then a short action checklist gets
+   worked through on its own — click any action to check it off yourself.
+   Once resolved, it stamps RESOLVED and moves to the next flagged company.
 ============================================================================ */
 
-interface ScoreCase {
+interface AlertCase {
   id: string;
-  name: string;
-  score: number;
+  company: string;
+  reason: string;
+  actions: string[];
 }
 
-const SCORE_CASES: ScoreCase[] = [
-  { id: "fernbank", name: "Fernbank", score: 54 },
-  { id: "halcyon", name: "Halcyon Systems", score: 41 },
-  { id: "loopwell", name: "Loopwell", score: 88 },
+const ALERT_CASES: AlertCase[] = [
+  {
+    id: "a1",
+    company: "Halcyon Systems",
+    reason: "third-party sharing detected",
+    actions: ["Send deletion request", "Flag for review", "Notify DPO"],
+  },
+  {
+    id: "a2",
+    company: "Marrow",
+    reason: "retention period undisclosed",
+    actions: [
+      "Request clarification",
+      "Flag for review",
+      "Set 90-day reminder",
+    ],
+  },
+  {
+    id: "a3",
+    company: "Iris & Co",
+    reason: "no erasure process found",
+    actions: ["Send deletion request", "Escalate to legal", "Flag for review"],
+  },
 ];
 
-function MiniScoreDial() {
-  const [selected, setSelected] = useState("loopwell");
-  const current = SCORE_CASES.find((c) => c.id === selected)!;
-  const good = current.score >= 70;
-  const ringColor = good ? "#059669" : "#dc2626";
+function PrivacyAlertPanel() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [checked, setChecked] = useState<Set<number>>(new Set());
+
+  const current = ALERT_CASES[activeIndex];
+  const total = current.actions.length;
+  const allDone = checked.size === total;
+
+  useEffect(() => {
+    if (!allDone) {
+      const nextIdx = current.actions.findIndex((_, i) => !checked.has(i));
+      if (nextIdx === -1) return;
+      const t = setTimeout(() => {
+        setChecked((prev) => new Set(prev).add(nextIdx));
+      }, 1300);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => {
+      setActiveIndex((i) => (i + 1) % ALERT_CASES.length);
+      setChecked(new Set());
+    }, 2200);
+    return () => clearTimeout(t);
+  }, [checked, allDone, current.actions]);
+
+  function toggle(i: number) {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
 
   return (
-    <div className="flex h-full flex-col justify-center rounded-2xl border border-gray-200 bg-white p-6">
-      <div className="flex items-center gap-6">
-        <div className="relative h-28 w-28 shrink-0">
-          <motion.div
-            className="absolute inset-0 rounded-full motion-reduce:hidden"
-            style={{ backgroundColor: ringColor, opacity: 0.12 }}
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: `conic-gradient(${ringColor} ${current.score * 3.6}deg, #e5e7eb 0deg)`,
-            }}
-          />
-          <div className="absolute inset-[8px] flex items-center justify-center rounded-full bg-white">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={current.id}
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                className="font-[family-name:var(--font-mono)] text-lg font-semibold text-gray-900"
-              >
-                {current.score}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-        </div>
+    <div className="flex h-[360px] w-full min-w-0 flex-col rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+        <span className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-gray-500">
+          Flagged
+        </span>
+        <span className="flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] text-red-600">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-600 motion-reduce:animate-none" />
+          alert
+        </span>
+      </div>
 
-        <div className="flex flex-col gap-2">
-          {SCORE_CASES.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setSelected(c.id)}
-              className={`rounded-sm px-2.5 py-1.5 text-left font-[family-name:var(--font-mono)] text-[11px] tracking-[0.05em] transition-colors ${
-                selected === c.id
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
+      <div className="mt-4 flex flex-1 flex-col">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current.id}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.25 }}
+            className="flex min-w-0 items-start gap-2.5 rounded-md border-l-4 border-red-600 bg-red-50 px-3.5 py-3"
+          >
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-gray-900">
+                {current.company}
+              </p>
+              <p className="mt-0.5 truncate text-xs text-gray-600">
+                {current.reason}
+              </p>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        <ul className="mt-4 space-y-2">
+          {current.actions.map((action, i) => {
+            const isChecked = checked.has(i);
+            return (
+              <li key={i}>
+                <button
+                  onClick={() => toggle(i)}
+                  className={`flex w-full min-w-0 items-center gap-2.5 rounded-md border px-3 py-2 text-left text-xs transition-colors ${
+                    isChecked
+                      ? "border-gray-100 bg-gray-50 text-gray-400"
+                      : "border-gray-200 bg-white text-gray-800"
+                  }`}
+                >
+                  <span
+                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                      isChecked
+                        ? "border-emerald-600 bg-emerald-600 text-white"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {isChecked && (
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                    )}
+                  </span>
+                  <span
+                    className={`truncate ${isChecked ? "line-through" : ""}`}
+                  >
+                    {action}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="mt-auto pt-4">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+            <motion.div
+              className={`h-full rounded-full ${allDone ? "bg-emerald-600" : "bg-red-600"}`}
+              animate={{ width: `${(checked.size / total) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+          <AnimatePresence>
+            {allDone && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="mt-2 text-right font-[family-name:var(--font-mono)] text-[10px] tracking-[0.1em] text-emerald-600"
+              >
+                RESOLVED
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
@@ -824,10 +935,10 @@ const STEPS = [
 export default function Home() {
   return (
     <main
-      className={`${mono.variable} ${sans.variable} min-h-screen bg-white font-[family-name:var(--font-sans)] text-gray-900`}
+      className={`${mono.variable} ${sans.variable} min-h-screen overflow-x-hidden bg-white font-[family-name:var(--font-sans)] text-gray-900`}
     >
       {/* ============================= HERO (unchanged palette) ============================= */}
-      <section className="relative pb-24 overflow-hidden bg-[#0E0F0D]">
+      <section className="relative overflow-hidden bg-[#0E0F0D]">
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.025)_0px,rgba(255,255,255,0.025)_1px,transparent_1px,transparent_3px)]" />
         <motion.div
           className="pointer-events-none absolute top-0 h-full w-40 bg-gradient-to-r from-transparent via-[#C99A2E]/10 to-transparent motion-reduce:hidden"
@@ -972,7 +1083,7 @@ export default function Home() {
       <section className="bg-gray-50 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-16 md:grid-cols-2">
-            <FollowUpPanel />
+            <DashboardPreview />
             <div>
               <h2 className="text-3xl font-medium tracking-tight text-gray-900 md:text-4xl">
                 That&apos;s where Trackly comes in
@@ -984,8 +1095,8 @@ export default function Home() {
               </p>
               <p className="mt-4 text-gray-500">
                 Instead of spreadsheets, notes, and forgotten tabs — Trackly
-                gives you one place to stay in control. Try checking one off on
-                the left.
+                gives you one place to stay in control. The preview on the left
+                updates on its own — pipeline stages, privacy scores, all of it.
               </p>
             </div>
           </div>
@@ -1005,7 +1116,7 @@ export default function Home() {
           </div>
 
           <div className="mt-12 grid gap-x-6 gap-y-10 md:grid-cols-3">
-            <div className="flex flex-col gap-4">
+            <div className="flex min-w-0 flex-col gap-4">
               <NotificationFeed />
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">
@@ -1017,7 +1128,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex min-w-0 flex-col gap-4">
               <MiniKanban />
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">
@@ -1029,14 +1140,14 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
-              <MiniScoreDial />
+            <div className="flex min-w-0 flex-col gap-4">
+              <PrivacyAlertPanel />
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">
-                  See your privacy exposure
+                  Know exactly what to do next
                 </h3>
                 <p className="mt-1 text-xs text-gray-500">
-                  Pick a company to see its privacy score at a glance.
+                  Flagged companies come with a ready-made action checklist.
                 </p>
               </div>
             </div>
