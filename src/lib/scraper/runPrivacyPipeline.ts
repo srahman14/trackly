@@ -7,16 +7,36 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { runPrivacyDiscovery } from "./runPrivacyDiscovery";
 import { runExtraction } from "./runExtraction";
+import { createScanLog } from "../db/scanLogs";
 
-export async function runPrivacyPipeline(supabase: SupabaseClient, companyId: string) {
-    try {
-        const scanResult = await runPrivacyDiscovery(supabase, companyId);
-        let extractResult = null;
-        if (scanResult.status === 'found' && scanResult.documentId) {
-            extractResult = await runExtraction(supabase, scanResult.documentId);
-        }
-        return { scanResult, extractResult };
-    } catch (err) {
-        console.error(`Background privacy policy failed for company ${companyId}:`, err);
-    }
+// runPrivacyPipeline.ts — updated to accept and log triggeredBy
+export async function runPrivacyPipeline(
+  supabase: SupabaseClient,
+  companyId: string,
+  triggeredBy: 'job_creation' | 'manual' = 'manual'
+) {
+  const scanResult = await runPrivacyDiscovery(supabase, companyId);
+  await createScanLog(supabase, {
+    companyId,
+    stage: 'discovery',
+    status: scanResult.status === 'found' ? (scanResult.cached ? 'cached' : 'success') : scanResult.status,
+    reason: scanResult.status === 'error' ? scanResult.reason : undefined,
+    triggeredBy,
+    privacyDocumentId: scanResult.status === 'found' ? scanResult.documentId || undefined : undefined,
+  });
+
+  let extractResult = null;
+  if (scanResult.status === 'found' && scanResult.documentId) {
+    extractResult = await runExtraction(supabase, scanResult.documentId);
+    await createScanLog(supabase, {
+      companyId,
+      stage: 'extraction',
+      status: extractResult.cached ? 'cached' : 'success',
+      triggeredBy,
+      privacyDocumentId: scanResult.documentId,
+      privacyEntityId: extractResult.entity.id,
+    });
+  }
+
+  return { scanResult, extractResult };
 }
