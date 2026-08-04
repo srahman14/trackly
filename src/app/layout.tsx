@@ -2,11 +2,11 @@ import Navbar from "@/components/navbar";
 import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "@/components/footer";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "trackly",
-  description:
-    "trackly - your personal privacy-first job tracker",
+  description: "trackly - your personal privacy-first job tracker",
 
   appleWebApp: {
     title: "trackly | privacy-first job tracker",
@@ -14,8 +14,7 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: "trackly | privacy-first job tracker",
-    description:
-      "trackly - your personal privacy-first job tracker",
+    description: "trackly - your personal privacy-first job tracker",
     url: "https://trackly-red.vercel.app/",
     siteName: "trackly",
     locale: "en_GB",
@@ -31,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`$h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
