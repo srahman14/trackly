@@ -27,7 +27,11 @@ export async function fetchCompanyPrivacySummary(companyId: string): Promise<Pri
   return unwrap<PrivacySummary | null>(res);
 }
 
-export async function triggerCompanyAnalysis(companyId: string) {
-  const res = await fetch(`/api/companies/${companyId}/analyze`, { method: 'POST' });
+export async function triggerCompanyAnalysis(companyId: string, jobId: string) {
+  const res = await fetch(`/api/companies/${companyId}/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jobId }),
+  });
   return unwrap(res);
 }

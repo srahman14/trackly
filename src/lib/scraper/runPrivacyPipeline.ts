@@ -13,12 +13,12 @@ import { createScanLog } from "../db/scanLogs";
 export async function runPrivacyPipeline(
   supabase: SupabaseClient,
   companyId: string,
-  triggeredBy: 'job_creation' | 'manual' = 'manual'
+  triggeredBy: 'job_creation' | 'manual' = 'manual',
+  jobId?: string
 ) {
   const scanResult = await runPrivacyDiscovery(supabase, companyId);
   await createScanLog(supabase, {
-    companyId,
-    stage: 'discovery',
+    companyId, jobId, stage: 'discovery',
     status: scanResult.status === 'found' ? (scanResult.cached ? 'cached' : 'success') : scanResult.status,
     reason: scanResult.status === 'error' ? scanResult.reason : undefined,
     triggeredBy,
@@ -29,14 +29,10 @@ export async function runPrivacyPipeline(
   if (scanResult.status === 'found' && scanResult.documentId) {
     extractResult = await runExtraction(supabase, scanResult.documentId);
     await createScanLog(supabase, {
-      companyId,
-      stage: 'extraction',
-      status: extractResult.cached ? 'cached' : 'success',
-      triggeredBy,
-      privacyDocumentId: scanResult.documentId,
-      privacyEntityId: extractResult.entity.id,
+      companyId, jobId, stage: 'extraction',
+      status: extractResult.cached ? 'cached' : 'success', triggeredBy,
+      privacyDocumentId: scanResult.documentId, privacyEntityId: extractResult.entity.id,
     });
   }
-
   return { scanResult, extractResult };
 }

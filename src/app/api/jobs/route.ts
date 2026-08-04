@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     if (job.company_id) {
       after(() =>
-        runPrivacyPipeline(supabase, job.company_id!, 'job_creation').catch((err) =>
+        runPrivacyPipeline(supabase, job.company_id!, 'job_creation', job.id).catch((err) =>
           console.error(`Background privacy pipeline failed for company ${job.company_id}:`, err)
         )
       )
