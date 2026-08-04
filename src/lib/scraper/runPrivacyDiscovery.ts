@@ -44,6 +44,8 @@ export async function runPrivacyDiscovery(
       return { status, cached: true } as PrivacyDiscoveryResult;
     }
   }
+  
+  await updateCompanyScanStatus(supabase, companyId, { privacy_scan_status: 'scanning' });
 
   if (company.privacy_policy_url) {
     return fetchAndStore(supabase, companyId, company.privacy_policy_url);
