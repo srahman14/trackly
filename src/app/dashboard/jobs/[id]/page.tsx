@@ -1,109 +1,117 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, RefreshCw, Trash2 } from "lucide-react"
-import { StatusStamp } from "@/components/StatusStamp"
-import { JobFormModal } from "@/components/JobFormModal"
-import { DeleteJobDialog } from "@/components/DeleteJobDialog"
-import { fetchJob, updateJob, deleteJob } from "@/lib/api/jobs"
-import type { CreateJobPayload } from "@/lib/api/jobs"
-import type { JobWithCompany } from "@/types/database"
-import { fetchCompanyPrivacySummary, triggerCompanyAnalysis } from "@/lib/api/companies"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { StatusStamp } from "@/components/StatusStamp";
+import { JobFormModal } from "@/components/JobFormModal";
+import { DeleteJobDialog } from "@/components/DeleteJobDialog";
+import { fetchJob, updateJob, deleteJob } from "@/lib/api/jobs";
+import type { CreateJobPayload } from "@/lib/api/jobs";
+import type { JobWithCompany } from "@/types/database";
+import {
+  fetchCompanyPrivacySummary,
+  triggerCompanyAnalysis,
+} from "@/lib/api/companies";
 
 export default function JobDetailPage() {
-  const params = useParams<{ id: string }>()
-  const router = useRouter()
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
 
-  const [job, setJob] = useState<JobWithCompany | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [editing, setEditing] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [job, setJob] = useState<JobWithCompany | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const [privacySummary, setPrivacySummary] = useState<Awaited<ReturnType<typeof fetchCompanyPrivacySummary>>>(null)
-  const [privacyLoading, setPrivacyLoading] = useState(false)
-  const [analyzing, setAnalyzing] = useState(false)
+  const [privacySummary, setPrivacySummary] =
+    useState<Awaited<ReturnType<typeof fetchCompanyPrivacySummary>>>(null);
+  const [privacyLoading, setPrivacyLoading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function load() {
-      setLoading(true)
+      setLoading(true);
       try {
-        const result = await fetchJob(params.id)
-        if (!cancelled) setJob(result)
+        const result = await fetchJob(params.id);
+        if (!cancelled) setJob(result);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load application")
+          setError(
+            err instanceof Error ? err.message : "Failed to load application",
+          );
         }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setLoading(false);
       }
     }
 
-    load()
+    load();
     return () => {
-      cancelled = true
-    }
-  }, [params.id])
+      cancelled = true;
+    };
+  }, [params.id]);
 
   useEffect(() => {
-    if (!job?.company?.id) return
-    let cancelled= false
+    if (!job?.company?.id) return;
+    let cancelled = false;
 
     async function loadPrivacy() {
-      setPrivacyLoading(true)
+      setPrivacyLoading(true);
       try {
-        const summary = await fetchCompanyPrivacySummary(job!.company!.id)
-        if (!cancelled) setPrivacySummary(summary)
+        const summary = await fetchCompanyPrivacySummary(job!.company!.id);
+        if (!cancelled) setPrivacySummary(summary);
       } catch {
         // just shows "pending" state if this fails
       } finally {
-        if (!cancelled) setPrivacyLoading(false)
+        if (!cancelled) setPrivacyLoading(false);
       }
     }
 
-    loadPrivacy()
+    loadPrivacy();
     return () => {
-      cancelled = true
-    }
-  }, [job?.company?.id])
+      cancelled = true;
+    };
+  }, [job?.company?.id]);
 
   async function handleAnalyze() {
-    if (!job?.company?.id) return
-    setAnalyzing(true)
+    if (!job?.company?.id) return;
+    setAnalyzing(true);
 
     try {
-      await triggerCompanyAnalysis(job.company.id)
-      const summary = await fetchCompanyPrivacySummary(job.company.id)
-      setPrivacySummary(summary)
-      const refreshedJob = await fetchJob(params.id)
-      setJob(refreshedJob)
+      triggerCompanyAnalysis(job.company.id, job.id);
+      const summary = await fetchCompanyPrivacySummary(job.company.id);
+      setPrivacySummary(summary);
+      const refreshedJob = await fetchJob(params.id);
+      setJob(refreshedJob);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Analysis failed")
+      alert(err instanceof Error ? err.message : "Analysis failed");
     } finally {
-      setAnalyzing(false)
+      setAnalyzing(false);
     }
   }
 
   async function handleUpdate(values: Partial<CreateJobPayload>) {
-    const updated = await updateJob(params.id, values)
-    setJob(updated)
+    const updated = await updateJob(params.id, values);
+    setJob(updated);
   }
 
   async function handleDelete() {
-    await deleteJob(params.id)
-    router.push("/jobs")
+    await deleteJob(params.id);
+    router.push("/jobs");
   }
 
   if (loading) {
     return (
       <div className="min-h-screen w-full bg-[#FAFAF7] font-mono text-zinc-900 dark:bg-[#0B0D0F] dark:text-zinc-100">
-        <div className="mx-auto max-w-4xl px-6 py-10 text-sm text-zinc-500">Loading…</div>
+        <div className="mx-auto max-w-4xl px-6 py-10 text-sm text-zinc-500">
+          Loading…
+        </div>
       </div>
-    )
+    );
   }
 
   if (error || !job) {
@@ -113,16 +121,19 @@ export default function JobDetailPage() {
           <p className="rounded border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-400">
             {error ?? "Application not found."}
           </p>
-          <Link href="/dashboard/jobs" className="mt-4 inline-block text-xs text-zinc-500 hover:underline">
+          <Link
+            href="/dashboard/jobs"
+            className="mt-4 inline-block text-xs text-zinc-500 hover:underline"
+          >
             ← Back to job board
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
-  const scanStatus = job.company?.privacy_scan_status ?? "not_scanned"
-  const entity = privacySummary?.entity ?? null
+  const scanStatus = job.company?.privacy_scan_status ?? "not_scanned";
+  const entity = privacySummary?.entity ?? null;
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAF7] font-mono text-zinc-900 dark:bg-[#0B0D0F] dark:text-zinc-100">
@@ -136,8 +147,12 @@ export default function JobDetailPage() {
 
         <header className="mb-6 flex flex-col gap-4 border-b border-dashed border-zinc-300 pb-6 dark:border-zinc-800 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Application file</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight">{job.job_title}</h1>
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+              Application file
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+              {job.job_title}
+            </h1>
             <div className="mt-2 flex items-center gap-2">
               <StatusStamp status={job.status} />
               <span className="text-xs text-zinc-400">
@@ -164,7 +179,9 @@ export default function JobDetailPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Job details panel */}
           <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <p className="mb-3 text-xs uppercase tracking-wide text-zinc-500">Role details</p>
+            <p className="mb-3 text-xs uppercase tracking-wide text-zinc-500">
+              Role details
+            </p>
             <dl className="space-y-3 text-sm">
               <div>
                 <dt className="text-xs text-zinc-400">Job URL</dt>
@@ -198,9 +215,15 @@ export default function JobDetailPage() {
                 onClick={handleAnalyze}
                 disabled={analyzing || !job.company?.id}
                 className="inline-flex items-center gap-1 rounded border border-zinc-300 px-2 py-1 text-[10px] uppercase tracking-wide text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                >
-                <RefreshCw className={`h-3 w-3 ${analyzing ? "animate-spin" : ""}`} />
-                {analyzing ? "Analyzing…" : scanStatus === "found" ? "Re-analyze" : "Analyze"}
+              >
+                <RefreshCw
+                  className={`h-3 w-3 ${analyzing ? "animate-spin" : ""}`}
+                />
+                {analyzing
+                  ? "Analyzing…"
+                  : scanStatus === "found"
+                    ? "Re-analyze"
+                    : "Analyze"}
               </button>
             </div>
 
@@ -219,10 +242,10 @@ export default function JobDetailPage() {
                 <dd>
                   {job.company?.privacy_policy_url ? (
                     <a
-                    href={job.company.privacy_policy_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline dark:text-blue-400"
+                      href={job.company.privacy_policy_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline dark:text-blue-400"
                     >
                       {job.company.privacy_policy_url}
                     </a>
@@ -238,7 +261,9 @@ export default function JobDetailPage() {
                 <>
                   <div>
                     <dt className="text-xs text-zinc-400">Privacy score</dt>
-                    <dd className="font-semibold">{entity.privacy_score ?? "—"} / 100</dd>
+                    <dd className="font-semibold">
+                      {entity.privacy_score ?? "—"} / 100
+                    </dd>
                   </div>
                   <div>
                     <dt className="text-xs text-zinc-400">Retention period</dt>
@@ -247,18 +272,22 @@ export default function JobDetailPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-zinc-400">DPO / privacy contact</dt>
-                    <dd>{entity.dpo_email ?? entity.contact_email ?? "Not found."}</dd>
+                    <dt className="text-xs text-zinc-400">
+                      DPO / privacy contact
+                    </dt>
+                    <dd>
+                      {entity.dpo_email ?? entity.contact_email ?? "Not found."}
+                    </dd>
                   </div>
                   <div>
                     <dt className="text-xs text-zinc-400">Data request link</dt>
                     <dd>
                       {entity.data_request_url ? (
-                        <a  
-                        href={entity.data_request_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline dark:text-blue-400"
+                        <a
+                          href={entity.data_request_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline dark:text-blue-400"
                         >
                           {entity.data_request_url}
                         </a>
@@ -268,32 +297,44 @@ export default function JobDetailPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-zinc-400">Third-party sharing / AI screening detected</dt>
+                    <dt className="text-xs text-zinc-400">
+                      Third-party sharing / AI screening detected
+                    </dt>
                     <dd className="text-xs text-zinc-500">
-                      {entity.shares_with_third_parties ? "Sharing mentioned. " : "No sharing mentioned. "}
-                      {entity.uses_ai_screening ? "AI screening mentioned." : "No AI screening mentioned."}
-                      <span className="block text-zinc-400">(auto-detected — verify against source)</span>
+                      {entity.shares_with_third_parties
+                        ? "Sharing mentioned. "
+                        : "No sharing mentioned. "}
+                      {entity.uses_ai_screening
+                        ? "AI screening mentioned."
+                        : "No AI screening mentioned."}
+                      <span className="block text-zinc-400">
+                        (auto-detected — verify against source)
+                      </span>
                     </dd>
                   </div>
                   <div>
                     <dt className="text-xs text-zinc-400">Summary</dt>
-                    <dd className="text-zinc-600 dark:text-zinc-400">{entity.summary}</dd>
+                    <dd className="text-zinc-600 dark:text-zinc-400">
+                      {entity.summary}
+                    </dd>
                   </div>
                 </>
               )}
 
               {!entity && !privacyLoading && scanStatus === "not_found" && (
                 <p className="text-xs text-zinc-400">
-                  No privacy policy link was found on this employer's job posting page.
+                  No privacy policy link was found on this employer's job
+                  posting page.
                 </p>
               )}
               {!entity && !privacyLoading && scanStatus === "error" && (
                 <p className="text-xs text-rose-500">
-                  The last scan failed. Try "Re-analyze," or set a privacy policy URL manually.
+                  The last scan failed. Try "Re-analyze," or set a privacy
+                  policy URL manually.
                 </p>
               )}
             </dl>
-            </section>
+          </section>
         </div>
       </div>
 
@@ -303,8 +344,8 @@ export default function JobDetailPage() {
           initialJob={job}
           onClose={() => setEditing(false)}
           onSubmit={async (values) => {
-            await handleUpdate(values)
-            setEditing(false)
+            await handleUpdate(values);
+            setEditing(false);
           }}
         />
       )}
@@ -317,5 +358,5 @@ export default function JobDetailPage() {
         />
       )}
     </div>
-  )
+  );
 }

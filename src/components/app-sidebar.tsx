@@ -30,6 +30,7 @@ import {
   Inbox,
   ListTodo,
   LogOut,
+  Logs,
   PanelLeft as PanelLeftIcon,
   Search,
   Settings,
@@ -58,9 +59,9 @@ const platformItems = [
     icon: ListTodo,
   },
   {
-    title: "Calendar",
-    url: "/",
-    icon: Calendar,
+    title: "Logs",
+    url: "/dashboard/logs",
+    icon: Logs,
   },
 ];
 
