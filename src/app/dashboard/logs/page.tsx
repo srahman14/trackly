@@ -30,9 +30,8 @@ export default function ScanLogsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["scan-logs-summary"],
     queryFn: () => fetchScanLogs(),
-    refetchInterval: (query) =>
-      query.state.data?.activeScans.length ? 2000 : 15000,
-  });
+    refetchInterval: 15000, 
+  })
 
   const chartData = useMemo(() => {
     if (!data?.summaries) return [];
