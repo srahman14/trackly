@@ -14,14 +14,6 @@ export interface CompanyScanSummary {
   last_log_at: string | null;
 }
 
-export interface ActiveScan {
-  id: string;
-  name: string;
-  domain: string | null;
-  privacy_scan_status: string;
-  last_scanned_at: string | null;
-}
-
 export interface ScanLog {
   id: string;
   company_id: string;
@@ -34,16 +26,6 @@ export interface ScanLog {
   triggered_by: "job_creation" | "manual" | "system";
   created_at: string;
   companies: { name: string; domain: string | null; privacy_scan_status: string };
-}
-
-interface ScanSummaryResponse {
-  summaries: CompanyScanSummary[];
-  activeScans: ActiveScan[];
-}
-
-interface ScanLogsListResponse {
-  logs: ScanLog[];
-  pagination: { page: number; limit: number; total: number };
 }
 
 export interface RecentScanLog {
@@ -59,6 +41,11 @@ export interface RecentScanLog {
 interface ScanSummaryResponse {
   summaries: CompanyScanSummary[];
   recentLogs: RecentScanLog[];
+}
+
+interface ScanLogsListResponse {
+  logs: ScanLog[];
+  pagination: { page: number; limit: number; total: number };
 }
 
 async function unwrap<T>(res: Response): Promise<T> {

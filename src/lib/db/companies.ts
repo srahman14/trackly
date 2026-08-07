@@ -8,54 +8,52 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api/errors";
 import { normalizeDomain, domainToCompanyName } from "@/lib/utils/domain";
 import type { Company } from "@/types/database";
-
+import { throwIfDbError } from "./dbErrors";
 export async function findOrCreateCompanyByUrl(
   supabase: SupabaseClient,
   jobUrl: string,
-): Promise<Company> {
+  privacyPolicyUrl?: string | null
+) {
   const domain = normalizeDomain(jobUrl);
+  const { data: existing } = await supabase.from('companies').select('*').eq('domain', domain).maybeSingle();
+  if (existing) return existing; // never overwrite an existing company's data from a job form — avoid clobbering scanner-discovered results
 
-  // Lookup company based on the domain url (i.e. stripe.com -> 'Stripe' after normalization)
-  const { data: existing, error: findError } = await supabase
-    .from("companies")
-    .select("*")
-    .eq("domain", domain)
-    .maybeSingle();
-
-    // If company not found -> return API error 
-  if (findError) throw new ApiError(500, "Failed to look up company");
-  if (existing) return existing as Company;
-
-  // Insert the company with name, domain and privacy_policy_url (currently null)
-  const { data: created, error: createError } = await supabase
-    .from("companies")
+  const { data, error } = await supabase
+    .from('companies')
     .insert({
-      name: domainToCompanyName(domain),
       domain,
-      privacy_policy_url: null,
+      name: domainToCompanyName(domain),
+      privacy_policy_url: privacyPolicyUrl ?? null,
     })
-    .select("*")
+    .select()
     .single();
 
-  if (createError) {
-    // unique_violation on companies.domain — another request won the race
-    // between our select and insert, so just fetch what they created
-    if (createError.code === "23505") {
-      const { data: raceWinner, error: raceError } = await supabase
-        .from("companies")
-        .select("*")
-        .eq("domain", domain)
-        .single();
-
-      if (raceError || !raceWinner) {
-        throw new ApiError(500, "Failed to resolve company after conflict");
-      }
-      return raceWinner as Company;
+  if (error) {
+    if (error.code === '23505') {
+      // Race condition — someone else inserted the same domain first, refetch the winner.
+      const { data: winner } = await supabase.from('companies').select('*').eq('domain', domain).single();
+      return winner;
     }
-    throw new ApiError(500, "Failed to create company");
+    throw new ApiError(500, 'Failed to create company');
   }
+  return data;
+}
 
-  return created as Company;
+export async function updateCompany(
+  supabase: SupabaseClient,
+  id: string,
+  updates: { privacy_policy_url?: string | null }
+) {
+  const { data, error } = await supabase
+    .from('companies')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  throwIfDbError(error, 'company');
+  if (!data) throw new ApiError(404, 'Company not found or update blocked by RLS');
+  return data;
 }
 
 export async function getCompanyById(

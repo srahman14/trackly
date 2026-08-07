@@ -1,4 +1,3 @@
-// lib/db/scanLogs.ts (new)
 import { SupabaseClient } from '@supabase/supabase-js';
 import { ApiError } from '@/lib/api/errors';
 

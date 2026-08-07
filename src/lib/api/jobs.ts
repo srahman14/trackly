@@ -26,6 +26,13 @@ export interface CreateJobPayload {
   job_description?: string
   status?: JobStatus
   applied_date?: string | null
+  role_type?: string | null;
+  work_mode?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  recruiter_name?: string | null;
+  recruiter_email?: string | null;
+  company_privacy_policy_url?: string | null;
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {

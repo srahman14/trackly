@@ -22,6 +22,17 @@ async function unwrap<T>(res: Response): Promise<T> {
   return json.data as T;
 }
 
+export async function updateCompanyPrivacyUrl(companyId: string, privacyPolicyUrl: string) {
+  const res = await fetch(`/api/companies/${companyId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ privacy_policy_url: privacyPolicyUrl }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error?.message ?? 'Failed to update company');
+  return json.data;
+}
+
 export async function fetchCompanyPrivacySummary(companyId: string): Promise<PrivacySummary | null> {
   const res = await fetch(`/api/companies/${companyId}/privacy-summary`);
   return unwrap<PrivacySummary | null>(res);

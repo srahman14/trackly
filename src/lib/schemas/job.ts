@@ -14,18 +14,22 @@ export const jobStatusEnum = z.enum([
 ]);
 
 export const createJobSchema = z.object({
-  job_title: z.string().min(1).max(255),
-  job_description: z.string().optional(),
+  job_title: z.string().min(1),
   job_url: z.string().url(),
-  status: jobStatusEnum.optional().default("saved"),
-  applied_date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD")
-    .optional()
-    .nullable(),
+  job_description: z.string().optional(),
+  status: z.enum(['saved', 'applied', 'interviewing', 'offer', 'rejected', 'withdrawn']).default('saved'),
+  applied_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  role_type: z.enum(['internship', 'graduate', 'full_time', 'part_time', 'contract']).nullable().optional(),
+  work_mode: z.enum(['remote', 'hybrid', 'onsite']).nullable().optional(),
+  salary_min: z.number().int().positive().nullable().optional(),
+  salary_max: z.number().int().positive().nullable().optional(),
+  recruiter_name: z.string().nullable().optional(),
+  recruiter_email: z.string().email().nullable().optional(),
+  // Not a jobs column — passed through to company resolution at creation only.
+  company_privacy_policy_url: z.string().url().nullable().optional(),
 });
 
-export const updateJobSchema = createJobSchema.partial();
+export const updateJobSchema = createJobSchema.omit({ company_privacy_policy_url: true }).partial();
 
 export const jobListQuerySchema = z.object({
   status: jobStatusEnum.optional(),

@@ -14,31 +14,31 @@ import type {
 } from "@/lib/schemas/job";
 import type { JobWithCompany } from "@/types/database";
 
-export async function createJob(
-  supabase: SupabaseClient,
-  userId: string,
-  input: CreateJobInput,
-): Promise<JobWithCompany> {
-  // Find company based off of the job_url
-  const company = await findOrCreateCompanyByUrl(supabase, input.job_url);
+export async function createJob(supabase: SupabaseClient, userId: string, input: CreateJobInput) {
+  const company = await findOrCreateCompanyByUrl(supabase, input.job_url, input.company_privacy_policy_url);
 
-  // Insert job
   const { data, error } = await supabase
-    .from("jobs")
+    .from('jobs')
     .insert({
       user_id: userId,
       company_id: company.id,
       job_title: input.job_title,
       job_description: input.job_description ?? null,
       job_url: input.job_url,
-      status: input.status ?? "saved",
+      status: input.status,
       applied_date: input.applied_date ?? null,
+      role_type: input.role_type ?? null,
+      work_mode: input.work_mode ?? null,
+      salary_min: input.salary_min ?? null,
+      salary_max: input.salary_max ?? null,
+      recruiter_name: input.recruiter_name ?? null,
+      recruiter_email: input.recruiter_email ?? null,
     })
-    .select("*, company:companies(*)")
+    .select('*, company:companies(*)')
     .single();
 
-  if (error) throw new ApiError(500, "Failed to create job");
-  return data as JobWithCompany;
+  if (error) throw new ApiError(500, 'Failed to create job');
+  return data;
 }
 
 export async function listJobs(

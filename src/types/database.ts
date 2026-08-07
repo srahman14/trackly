@@ -26,6 +26,13 @@ export interface Job {
   job_url: string
   status: JobStatus
   applied_date: string | null
+  role_type: string
+  work_mode: string
+  salary_min: string
+  salary_max: string
+  recruiter_name: string
+  recruiter_email: string
+  company_privacy_policy_url: string
   created_at: string
   updated_at: string
 }
