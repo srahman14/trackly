@@ -4,6 +4,7 @@ import { RecentScansWidget } from "@/components/RecentScansWidget";
 import { ApplicationsChart } from "@/components/applications-chart";
 import {
   AlertTriangle,
+  ArrowDownRight,
   ArrowUpRight,
   Clock,
   FileText,
@@ -14,46 +15,49 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchDashboardSummary } from "@/lib/api/dashboard";
+import { useDashboardSummary } from "@/lib/queries/dashboard";
 
 // --- Mock data — swap for real queries once the DB layer is wired up ---
-const metrics = [
-  {
-    label: "Applications Applied",
-    value: 24,
-    delta: "+4",
-    trend: "up",
-    ref: "TRK-APP",
-    icon: FileText,
-    accent: "blue",
-  },
-  {
-    label: "Rejections Logged",
-    value: 9,
-    delta: "+2",
-    trend: "up",
-    ref: "TRK-REJ",
-    icon: XCircle,
-    accent: "zinc",
-  },
-  {
-    label: "Erasure Requests Sent",
-    value: 6,
-    delta: "Art. 17",
-    trend: "flat",
-    ref: "TRK-ERS",
-    icon: Send,
-    accent: "emerald",
-  },
-  {
-    label: "Avg. Privacy Score",
-    value: "72/100",
-    delta: "+3",
-    trend: "up",
-    ref: "TRK-SCR",
-    icon: Gauge,
-    accent: "amber",
-  },
-];
+// const metrics = [
+//   {
+//     label: "Applications Applied",
+//     value: 24,
+//     delta: "+4",
+//     trend: "up",
+//     ref: "TRK-APP",
+//     icon: FileText,
+//     accent: "blue",
+//   },
+//   {
+//     label: "Rejections Logged",
+//     value: 9,
+//     delta: "+2",
+//     trend: "up",
+//     ref: "TRK-REJ",
+//     icon: XCircle,
+//     accent: "zinc",
+//   },
+//   {
+//     label: "Erasure Requests Sent",
+//     value: 6,
+//     delta: "Art. 17",
+//     trend: "flat",
+//     ref: "TRK-ERS",
+//     icon: Send,
+//     accent: "emerald",
+//   },
+//   {
+//     label: "Avg. Privacy Score",
+//     value: "72/100",
+//     delta: "+3",
+//     trend: "up",
+//     ref: "TRK-SCR",
+//     icon: Gauge,
+//     accent: "amber",
+//   },
+// ];
 
 const retentionWatch = [
   {
@@ -70,29 +74,6 @@ const retentionWatch = [
     company: "Cobalt Systems",
     appliedAgo: "4 months ago",
     status: "erasure sent",
-  },
-];
-
-const activityLog = [
-  {
-    time: "09:41",
-    action: "Erasure request drafted",
-    target: "Cobalt Systems",
-  },
-  {
-    time: "09:12",
-    action: "Privacy policy scanned",
-    target: "Halberd Robotics",
-  },
-  {
-    time: "yesterday",
-    action: "Application logged",
-    target: "Meridian Health",
-  },
-  {
-    time: "yesterday",
-    action: "Status changed to Rejected",
-    target: "Nordholt & Vance",
   },
 ];
 
@@ -121,6 +102,63 @@ export default function DashboardPage() {
     ? now.toISOString().replace("T", " ").slice(0, 19) + " UTC"
     : "—";
 
+  function formatDelta(n: number) {
+    return n > 0 ? `+${n}` : n < 0 ? `${n}` : "0";
+  }
+  function trendFor(n: number): "up" | "down" | "flat" {
+    return n > 0 ? "up" : n < 0 ? "down" : "flat";
+  }
+
+  // inside the dashboard component:
+  const { data, isLoading } = useDashboardSummary();
+
+  const metrics = data
+    ? [
+        {
+          label: "Applications Applied",
+          value: data.metrics.applicationsApplied,
+          delta: `${formatDelta(data.metrics.applicationsAppliedDelta)} vs. last month`,
+          trend: trendFor(data.metrics.applicationsAppliedDelta),
+          ref: "TRK-APP",
+          icon: FileText,
+          accent: "blue" as const,
+        },
+        {
+          label: "Rejections Logged",
+          value: data.metrics.rejectionsLogged,
+          delta: `${formatDelta(data.metrics.rejectionsLoggedDelta)} vs. last month`,
+          trend: trendFor(data.metrics.rejectionsLoggedDelta),
+          ref: "TRK-REJ",
+          icon: XCircle,
+          accent: "zinc" as const,
+        },
+        {
+          label: "Erasure Requests Sent",
+          value: data.metrics.erasureRequestsSent,
+          delta: "Art. 17",
+          trend: "flat" as const,
+          ref: "TRK-ERS",
+          icon: Send,
+          accent: "emerald" as const,
+        },
+        {
+          label: "Avg. Privacy Score",
+          value:
+            data.metrics.avgPrivacyScore !== null
+              ? `${data.metrics.avgPrivacyScore}/100`
+              : "—",
+          delta:
+            data.metrics.avgPrivacyScore !== null
+              ? "across scanned employers"
+              : "no scans yet",
+          trend: "flat" as const,
+          ref: "TRK-SCR",
+          icon: Gauge,
+          accent: "amber" as const,
+        },
+      ]
+    : [];
+
   return (
     <div className="min-h-screen w-full bg-[#FAFAF7] font-mono text-zinc-900 dark:bg-[#0B0D0F] dark:text-zinc-100">
       <div className="mx-auto max-w-7xl px-6 py-10">
@@ -142,35 +180,48 @@ export default function DashboardPage() {
 
         {/* Metrics */}
         <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {metrics.map((m) => {
-            const Icon = m.icon;
-            return (
+          {isLoading &&
+            Array.from({ length: 4 }).map((_, i) => (
               <div
-                key={m.label}
-                className="relative overflow-hidden rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
-              >
-                <div className="mb-3 flex items-center justify-between">
-                  <span
-                    className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${accentClasses[m.accent]}`}
-                  >
-                    <Icon className="h-3 w-3" />
-                    {m.ref}
-                  </span>
-                  {m.trend === "up" && (
-                    <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  )}
-                  {m.trend === "flat" && (
-                    <span className="text-[10px] text-zinc-400">—</span>
-                  )}
+                key={i}
+                className="h-[104px] animate-pulse rounded-md border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
+              />
+            ))}
+          {!isLoading &&
+            metrics.map((m) => {
+              const Icon = m.icon;
+              return (
+                <div
+                  key={m.label}
+                  className="relative overflow-hidden rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <span
+                      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${accentClasses[m.accent]}`}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {m.ref}
+                    </span>
+                    {m.trend === "up" && (
+                      <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    )}
+                    {m.trend === "down" && (
+                      <ArrowDownRight className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+                    )}
+                    {m.trend === "flat" && (
+                      <span className="text-[10px] text-zinc-400">—</span>
+                    )}
+                  </div>
+                  <p className="text-2xl font-semibold tabular-nums">
+                    {m.value}
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500">{m.label}</p>
+                  <p className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-600">
+                    {m.delta}
+                  </p>
                 </div>
-                <p className="text-2xl font-semibold tabular-nums">{m.value}</p>
-                <p className="mt-1 text-xs text-zinc-500">{m.label}</p>
-                <p className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-600">
-                  {m.delta} vs. last month
-                </p>
-              </div>
-            );
-          })}
+              );
+            })}
         </section>
 
         {/* Graph + Quick Actions */}
@@ -190,7 +241,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <div className="h-56">
-              <ApplicationsChart />
+              <ApplicationsChart data={data?.weeklyApplications ?? []} />{" "}
             </div>
           </div>
 
