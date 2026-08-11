@@ -18,6 +18,9 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchDashboardSummary } from "@/lib/api/dashboard";
 import { useDashboardSummary } from "@/lib/queries/dashboard";
+import { JobWithCompany } from "@/types/database";
+import { createJob, CreateJobPayload, updateJob } from "@/lib/api/jobs";
+import { JobFormModal } from "@/components/JobFormModal";
 
 // --- Mock data — swap for real queries once the DB layer is wired up ---
 // const metrics = [
@@ -109,7 +112,6 @@ export default function DashboardPage() {
     return n > 0 ? "up" : n < 0 ? "down" : "flat";
   }
 
-  // inside the dashboard component:
   const { data, isLoading } = useDashboardSummary();
 
   const metrics = data
@@ -158,6 +160,32 @@ export default function DashboardPage() {
         },
       ]
     : [];
+
+    const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
+    const [activeJob, setActiveJob] = useState<JobWithCompany | undefined>(
+      undefined,
+    );
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    function openCreateModal() {
+      setActiveJob(undefined);
+      setModalMode("create");
+    }
+
+    function openEditModal(job: JobWithCompany) {
+      setActiveJob(job);
+      setModalMode("edit");
+    }
+
+    async function handleFormSubmit(values: Partial<CreateJobPayload>) {
+      if (modalMode === "create") {
+        await createJob(values as CreateJobPayload);
+      } else if (modalMode === "edit" && activeJob) {
+        await updateJob(activeJob.id, values);
+      }
+      setModalMode(null);
+      setRefreshKey((k) => k + 1);
+    }
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAF7] font-mono text-zinc-900 dark:bg-[#0B0D0F] dark:text-zinc-100">
@@ -250,7 +278,7 @@ export default function DashboardPage() {
               Quick Actions
             </p>
             <div className="flex flex-col gap-2">
-              <button className="flex items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
+              <button onClick={openCreateModal} className="flex items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
                 <Plus className="h-3.5 w-3.5" /> Log new application
               </button>
               <button className="flex items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
@@ -310,6 +338,8 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
+
+
     </div>
   );
 }
