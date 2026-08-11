@@ -1114,7 +1114,7 @@ export default function Home() {
       </section>
 
       {/* ======================= THAT'S WHERE TRACKLY COMES IN ======================= */}
-      <section className="bg-gray-50 py-24">
+      <section id="about" className="bg-gray-50 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-16 md:grid-cols-2">
             <DashboardPreview />
@@ -1138,7 +1138,7 @@ export default function Home() {
       </section>
 
       {/* ======================= EVERYTHING IN ONE PLACE ======================= */}
-      <section className="py-24">
+      <section id="features" className="py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-medium tracking-tight text-gray-900 md:text-4xl">
@@ -1190,7 +1190,7 @@ export default function Home() {
       </section>
 
       {/* ======================= HOW TRACKLY WORKS ======================= */}
-      <section id="how-it-works" className="bg-gray-50 py-24">
+      <section id="how" className="bg-gray-50 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-medium tracking-tight text-gray-900 md:text-4xl">

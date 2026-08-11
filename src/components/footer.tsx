@@ -83,26 +83,42 @@ export default function Footer() {
               <p className="font-medium text-lg tracking-tight text-zinc-900">
                 Product
               </p>
-              <p>Features</p>
-              <p>How it works</p>
-              <p>Register</p>
+              <ul className="space-y-2">
+                <li>
+                  <Link href={"#features"}>Features</Link>
+                </li>
+                <li>
+                  <Link href={"#how"}>How it works</Link>
+                </li>
+              </ul>
             </div>
 
             <div className="space-y-2">
               <p className="font-medium text-lg tracking-tight text-zinc-900">
                 Company
               </p>
-              <p>About</p>
-              <p>Privacy</p>
-              <p>Contact</p>
+              <ul className="space-y-2">
+                <li>
+                  <Link href={"/privacy"}>Privacy</Link>
+                </li>
+                <li>
+                  <Link href={"/terms"}>T&Cs</Link>
+                </li>
+                {/* <li>
+                  <a>Contact</a>
+                </li> */}
+              </ul>
             </div>
 
             <div className="space-y-2">
               <p className="font-medium text-lg tracking-tight text-zinc-900">
                 Support
               </p>
-              <p>Help</p>
-              <p>FAQ</p>
+              <ul>
+                <li>
+                  <Link href={"/faq"}>FAQ</Link>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
