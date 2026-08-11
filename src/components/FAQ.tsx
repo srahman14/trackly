@@ -21,6 +21,10 @@ const faqs = [
     q: "Is Trackly free to use?",
     a: "Yes, Trackly's services are free to use.",
   },
+  {
+    q: "Where can I found out more common questions?",
+    a: "Check out our dedicated FAQ page to find out the answers to the most frequently asked questions.",
+  },
 ];
 
 export default function FAQ() {
@@ -28,7 +32,7 @@ export default function FAQ() {
 
   return (
     <section className="py-32 border-t">
-      <div className="mx-24 max-w-full">
+      <div className="mx-auto max-w-4xl p-4 md:p-0">
         {/* HEADER */}
         <div className="text-center">
           <h2 className="text-4xl md:text-4xl font-medium tracking-tight text-zinc-900">
