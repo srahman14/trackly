@@ -15,6 +15,7 @@ import {
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function SignupPage() {
   const [name, setName] = React.useState("");
@@ -30,7 +31,6 @@ export default function SignupPage() {
     if (!agreed) return;
     setLoading(true);
 
-    // Replace with react-hot-toast instead of logging
     if (!password) {
       console.log("Invalid password");
     }
@@ -45,11 +45,10 @@ export default function SignupPage() {
     });
 
     if (error) {
-      console.error(error.message);
+      toast.error("Error signing up, please ensure all credentials are correct.")
       return;
     }
 
-    setTimeout(() => setLoading(false), 1400);
     router.push("/dashboard");
     setLoading(false);
   };

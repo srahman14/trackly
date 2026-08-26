@@ -15,6 +15,7 @@ import {
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
@@ -32,17 +33,17 @@ export default function LoginPage() {
       console.log("Invalid credentials");
     }
 
-    // Replace with react-hot-toast instead of logging
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.error(error);
+      toast.error("Error logging in, please re-enter your credentials.");
+    setLoading(false);  
+      return;
     }
 
-    setTimeout(() => setLoading(false), 1400);
     router.push("/dashboard");
     setLoading(false);
   };
