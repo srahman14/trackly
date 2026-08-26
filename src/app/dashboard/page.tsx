@@ -1,7 +1,11 @@
 "use client";
 
+import { JobFormModal } from "@/components/JobFormModal";
 import { RecentScansWidget } from "@/components/RecentScansWidget";
 import { ApplicationsChart } from "@/components/applications-chart";
+import { createJob, CreateJobPayload, updateJob } from "@/lib/api/jobs";
+import { useDashboardSummary } from "@/lib/queries/dashboard";
+import { JobWithCompany } from "@/types/database";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -14,53 +18,8 @@ import {
   Send,
   XCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchDashboardSummary } from "@/lib/api/dashboard";
-import { useDashboardSummary } from "@/lib/queries/dashboard";
-import { JobWithCompany } from "@/types/database";
-import { createJob, CreateJobPayload, updateJob } from "@/lib/api/jobs";
-import { JobFormModal } from "@/components/JobFormModal";
-
-// --- Mock data — swap for real queries once the DB layer is wired up ---
-// const metrics = [
-//   {
-//     label: "Applications Applied",
-//     value: 24,
-//     delta: "+4",
-//     trend: "up",
-//     ref: "TRK-APP",
-//     icon: FileText,
-//     accent: "blue",
-//   },
-//   {
-//     label: "Rejections Logged",
-//     value: 9,
-//     delta: "+2",
-//     trend: "up",
-//     ref: "TRK-REJ",
-//     icon: XCircle,
-//     accent: "zinc",
-//   },
-//   {
-//     label: "Erasure Requests Sent",
-//     value: 6,
-//     delta: "Art. 17",
-//     trend: "flat",
-//     ref: "TRK-ERS",
-//     icon: Send,
-//     accent: "emerald",
-//   },
-//   {
-//     label: "Avg. Privacy Score",
-//     value: "72/100",
-//     delta: "+3",
-//     trend: "up",
-//     ref: "TRK-SCR",
-//     icon: Gauge,
-//     accent: "amber",
-//   },
-// ];
 
 const retentionWatch = [
   {
@@ -112,6 +71,8 @@ export default function DashboardPage() {
     return n > 0 ? "up" : n < 0 ? "down" : "flat";
   }
 
+  const router = useRouter();
+
   const { data, isLoading } = useDashboardSummary();
 
   const metrics = data
@@ -161,31 +122,31 @@ export default function DashboardPage() {
       ]
     : [];
 
-    const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
-    const [activeJob, setActiveJob] = useState<JobWithCompany | undefined>(
-      undefined,
-    );
-    const [refreshKey, setRefreshKey] = useState(0);
+  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
+  const [activeJob, setActiveJob] = useState<JobWithCompany | undefined>(
+    undefined,
+  );
+  const [refreshKey, setRefreshKey] = useState(0);
 
-    function openCreateModal() {
-      setActiveJob(undefined);
-      setModalMode("create");
-    }
+  function openCreateModal() {
+    setActiveJob(undefined);
+    setModalMode("create");
+  }
 
-    function openEditModal(job: JobWithCompany) {
-      setActiveJob(job);
-      setModalMode("edit");
-    }
+  function openEditModal(job: JobWithCompany) {
+    setActiveJob(job);
+    setModalMode("edit");
+  }
 
-    async function handleFormSubmit(values: Partial<CreateJobPayload>) {
-      if (modalMode === "create") {
-        await createJob(values as CreateJobPayload);
-      } else if (modalMode === "edit" && activeJob) {
-        await updateJob(activeJob.id, values);
-      }
-      setModalMode(null);
-      setRefreshKey((k) => k + 1);
+  async function handleFormSubmit(values: Partial<CreateJobPayload>) {
+    if (modalMode === "create") {
+      await createJob(values as CreateJobPayload);
+    } else if (modalMode === "edit" && activeJob) {
+      await updateJob(activeJob.id, values);
     }
+    setModalMode(null);
+    setRefreshKey((k) => k + 1);
+  }
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAF7] font-mono text-zinc-900 dark:bg-[#0B0D0F] dark:text-zinc-100">
@@ -199,10 +160,18 @@ export default function DashboardPage() {
             <h1 className="mt-1 text-3xl font-semibold tracking-tight">
               Dashboard
             </h1>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
+<div className="flex items-center gap-2 text-xs text-zinc-500">
+
             <Clock className="h-3.5 w-3.5" />
             <span>{stamp}</span>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-2 text-xs text-zinc-500">
+
+            <div className="flex flex-col flex-wrap gap-1">
+              <p>⌘ K - Open Command Pallete</p>
+              <p>⌘ B - Open/Close Sidebar</p>
+            </div>
           </div>
         </header>
 
@@ -278,16 +247,28 @@ export default function DashboardPage() {
               Quick Actions
             </p>
             <div className="flex flex-col gap-2">
-              <button onClick={openCreateModal} className="flex items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
+              <button
+                onClick={openCreateModal}
+                className="flex items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+              >
                 <Plus className="h-3.5 w-3.5" /> Log new application
               </button>
-              <button className="flex items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
+              <button
+                onClick={() => router.push("/dashboard/jobs")}
+                className="flex items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+              >
                 <Search className="h-3.5 w-3.5" /> Scan privacy policy
               </button>
-              <button className="flex items-center gap-2 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-left text-sm text-emerald-800 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400 dark:hover:bg-emerald-950/70">
+              <button
+                disabled
+                className="flex cursor-not-allowed items-center gap-2 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-left text-sm text-emerald-800 opacity-50 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400"
+              >
                 <Send className="h-3.5 w-3.5" /> Draft erasure request (Art. 17)
               </button>
-              <button className="flex items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
+              <button
+                disabled
+                className="flex cursor-not-allowed items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-left text-sm opacity-50 dark:border-zinc-800"
+              >
                 <FileText className="h-3.5 w-3.5" /> Request data access (Art.
                 15)
               </button>
@@ -332,14 +313,21 @@ export default function DashboardPage() {
 
           <div className="rounded-md border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
             <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-zinc-500">
-              Processing Log
+              Recent Scan Logs
             </p>
             <RecentScansWidget />
           </div>
         </section>
       </div>
 
-
+      {modalMode && (
+        <JobFormModal
+          mode={modalMode}
+          initialJob={activeJob}
+          onClose={() => setModalMode(null)}
+          onSubmit={handleFormSubmit}
+        />
+      )}
     </div>
   );
 }

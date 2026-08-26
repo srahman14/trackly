@@ -11,9 +11,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  useSidebar,
+  useSidebar
 } from "@/components/ui/sidebar";
+import { createClient } from "@/lib/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,29 +22,20 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import {
   BadgeAlert,
-  Calendar,
   ChevronsUpDown,
-  Circle,
   CircleCheck,
   Home,
-  Inbox,
   ListTodo,
   LogOut,
   Logs,
   PanelLeft as PanelLeftIcon,
-  Search,
   Settings,
   ShieldAlert,
-  User2,
+  User2
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ModeToggle } from "./theme-toggle";
-import { useTheme } from "next-themes";
-import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
-import { requireUser } from "@/lib/api/auth";
 
 // Menu items.
 const platformItems = [
@@ -111,7 +102,7 @@ export function AppSidebar() {
           className="hidden dark:block object-contain shrink-0 cursor-default"
           priority
         />
-        <ModeToggle />
+        {/* <ModeToggle /> */}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -138,7 +129,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <SidebarGroupLabel className="text-bold tracking-tighter text-md text-zinc-500">
             Applications
           </SidebarGroupLabel>
@@ -157,7 +148,7 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
@@ -192,20 +183,11 @@ export function AppSidebar() {
               >
                 <DropdownMenuItem asChild>
                   <Link
-                    href="/settings/general"
+                    href="#"
                     className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-600/50 ring-0 outline-none"
                   >
                     <User2 className="w-4 h-4" />
                     <span>Account</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/settings"
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-600/50 ring-0 outline-none"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Settings</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

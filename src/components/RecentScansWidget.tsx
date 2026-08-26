@@ -37,7 +37,7 @@ export function RecentScansWidget() {
           </span>
           <span className="shrink-0 text-zinc-400">{log.stage}</span>
           <span className="ml-auto shrink-0 text-zinc-400">
-            {new Date(log.created_at).toLocaleTimeString()}
+            {new Date(log.created_at).toLocaleString()}
           </span>
         </li>
       ))}
