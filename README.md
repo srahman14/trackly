@@ -91,7 +91,7 @@ The Layer 1 / Layer 2 split in extraction is deliberate: Layer 1 (`htmlToExtract
 
 ---
 
-## Known limitations (deliberate scope decisions, not bugs)
+## Known limitations (deliberate scope decisions)
 
 Automated privacy policy discovery is a best-effort heuristic, not a guarantee — this is an honest limitation of the problem domain, not a flaw unique to this implementation. Specifically, out of scope for v1:
 
