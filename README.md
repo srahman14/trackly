@@ -2,7 +2,7 @@
   <img src="./public/icons/watermark-logo-light.svg" alt="trackly-logo"/>
 </div>
 
-A privacy-first job application tracker. Trackly does the usual job-tracking things: log applications, track status, follow up — but its core differentiator is a **privacy-intelligence engine**: when you log a job, Trackly automatically discovers and analyzes the employer's privacy policy (retention periods, DPO contact, third-party data sharing) so you know what you're agreeing to for every application. 
+A privacy-first job application tracker. Trackly does the usual job-tracking things: log applications, track status, follow up, but its core differentiator is a **privacy-intelligence engine**: when you log a job, Trackly automatically discovers and analyzes the employer's privacy policy (retention periods, DPO contact, third-party data sharing) so you know what you're agreeing to for every application. 
 
 Built as a full-stack web-app, with particular emphasis on architectural decision-making, graceful failure handling, and end-to-end delivery.
 
@@ -16,13 +16,13 @@ Every job application means handing a company your CV, contact details, and ofte
 
 ## Core features
 
-- **Job tracking** — full CRUD, status pipeline (saved → applied → interviewing → offer/rejected/withdrawn), role type, work mode, salary range, recruiter contact, notes
-- **Automated privacy discovery** — on adding a job, Trackly visits the posting page, finds a linked privacy policy (footer/nav link detection), fetches it, and stores it — all in the background, without slowing down job creation
-- **Structured privacy extraction** — pulls DPO/contact email, data retention period, data request/erasure link, and flags mentions of third-party sharing or AI-based screening
-- **Rules-based privacy score** — a transparent, explainable 0–100 score computed from the extracted fields (no black box)
-- **Manual override** — if automated discovery misses (it won't always find it — more on that below), you can paste the privacy policy URL directly
-- **Scan history & observability** — a dedicated scan-logs page shows discovery/extraction outcomes per company, with an outcome breakdown chart and a "recent activity" feed on the dashboard
-- **Dashboard** — real aggregate metrics (applications, rejections, avg. privacy score) and a weekly application trend chart
+- **Job tracking**: full CRUD, status pipeline (saved → applied → interviewing → offer/rejected/withdrawn), role type, work mode, salary range, recruiter contact, notes
+- **Automated privacy discovery**: on adding a job, Trackly visits the posting page, finds a linked privacy policy (footer/nav link detection), fetches it, and stores it — all in the background, without slowing down job creation
+- **Structured privacy extraction**: pulls DPO/contact email, data retention period, data request/erasure link, and flags mentions of third-party sharing or AI-based screening
+- **Rules-based privacy score**: a transparent, explainable 0–100 score computed from the extracted fields (no black box)
+- **Manual override**: if automated discovery misses (it won't always find it — more on that below), you can paste the privacy policy URL directly
+- **Scan history & observability**: a dedicated scan-logs page shows discovery/extraction outcomes per company, with an outcome breakdown chart and a "recent activity" feed on the dashboard
+- **Dashboard**: real aggregate metrics (applications, rejections, avg. privacy score) and a weekly application trend chart
 
 ---
 
@@ -42,7 +42,7 @@ Every job application means handing a company your CV, contact details, and ofte
 
 **Why Route Handlers instead of Server Actions:** future consumers (a Chrome extension, a Discord bot) will need real REST endpoints, not React-coupled server actions. Building on Route Handlers from day one means those integrations are additive, not a rewrite.
 
-**Why Cheerio over Playwright/Puppeteer:** most privacy policy pages are server-rendered legal boilerplate, not JS-rendered SPAs. A full headless browser is unnecessary weight for that workload — Cheerio + `fetch` covers the large majority of real-world cases at a fraction of the resource cost. (Playwright remains a reasonable fallback for the minority of cases that need it — not implemented in v1.)
+**Why Cheerio over Playwright/Puppeteer:** most privacy policy pages are server-rendered legal boilerplate, not JS-rendered SPAs. A full headless browser is unnecessary weight for that workload — Cheerio + `fetch` covers the large majority of real-world cases at a fraction of the resource cost. (Playwright remains a reasonable fallback for the minority of cases that need it, not implemented in v1.)
 
 ---
 
@@ -83,22 +83,22 @@ The Layer 1 / Layer 2 split in extraction is deliberate: Layer 1 (`htmlToExtract
 
 ### Failure handling
 
-- **Robots.txt compliance** — checked before every fetch; fails open on missing/unreachable `robots.txt` (absence isn't a disallow signal), fails closed on malformed responses
-- **Freshness caching** — a company scanned within 24h is served from cache, no redundant network calls
-- **Content-hash dedupe** — re-scans only create a new document row if the *normalized visible text* actually changed (not raw HTML, which includes per-request noise like CSRF tokens and analytics nonces)
-- **RLS zero-rows-affected guards** — Postgres/Supabase RLS doesn't error on a blocked write, it just silently updates zero rows. Every mutating DB function checks the returned row count explicitly rather than assuming success from the absence of an error.
-- **Malformed input handling** — invalid UUIDs in route params surface as `400`, not a generic `500`, via explicit Postgres error code (`22P02`) handling
+- **Robots.txt compliance**: checked before every fetch; fails open on missing/unreachable `robots.txt` (absence isn't a disallow signal), fails closed on malformed responses
+- **Freshness caching**: a company scanned within 24h is served from cache, no redundant network calls
+- **Content-hash dedupe**: re-scans only create a new document row if the *normalized visible text* actually changed (not raw HTML, which includes per-request noise like CSRF tokens and analytics nonces)
+- **RLS zero-rows-affected guards**: Postgres/Supabase RLS doesn't error on a blocked write, it just silently updates zero rows. Every mutating DB function checks the returned row count explicitly rather than assuming success from the absence of an error.
+- **Malformed input handling**: invalid UUIDs in route params surface as `400`, not a generic `500`, via explicit Postgres error code (`22P02`) handling
 
 ---
 
 ## Known limitations (deliberate scope decisions)
 
-Automated privacy policy discovery is a best-effort heuristic, not a guarantee — this is an honest limitation of the problem domain, not a flaw unique to this implementation. Specifically, out of scope for v1:
+Automated privacy policy discovery is a best-effort heuristic, not a guarantee: this is an honest limitation of the problem domain, not a flaw unique to this implementation. Specifically, out of scope for v1:
 
-- **PDF-based privacy policies** — the fetcher currently rejects non-HTML content types; a real, observed occurrence, deferred to v2 by design (the Layer 1/2 split anticipates this)
-- **AI-assisted extraction/link-finding** — reserved as a scoped fallback (e.g. classifying a page's existing anchor list, not full-page extraction) for the cases the rules-based approach misses, rather than a blanket AI-on-everything approach that wouldn't be cost-viable at scale
-- **Negation-aware detection** — "third-party sharing" and "AI screening" flags are presence-detectors, not confirmed yes/no answers; a policy stating data is *not* shared would still register as detected. Surfaced in the UI as "auto-detected — verify against source," not hidden.
-- **Region/role-specific privacy notices** — at companies with multiple postings, the first-discovered policy is used company-wide
+- **PDF-based privacy policies**: the fetcher currently rejects non-HTML content types; a real, observed occurrence, deferred to v2 by design (the Layer 1/2 split anticipates this)
+- **AI-assisted extraction/link-finding**: reserved as a scoped fallback (e.g. classifying a page's existing anchor list, not full-page extraction) for the cases the rules-based approach misses, rather than a blanket AI-on-everything approach that wouldn't be cost-viable at scale
+- **Negation-aware detection**: "third-party sharing" and "AI screening" flags are presence-detectors, not confirmed yes/no answers; a policy stating data is *not* shared would still register as detected. Surfaced in the UI as "auto-detected — verify against source," not hidden.
+- **Region/role-specific privacy notices**: at companies with multiple postings, the first-discovered policy is used company-wide
 
 ---
 
@@ -134,7 +134,7 @@ A benchmarking suite (`benchmarks/`) measures extraction accuracy (precision/rec
 
 ## Roadmap
 
-- **AI integration** — scoped, cost-bounded fallback for link discovery and extraction; AI-assisted email drafting for data deletion/access requests (`generated_emails` schema already in place)
-- **PDF support** — new Layer 1 input function, no changes to extraction logic
-- **Communal features** — friend connections and shared activity visibility (requires its own privacy-model design, given the app's core premise — deliberately not started until that's scoped properly)
-- **Chrome extension / Discord bot** — enabled by the existing REST API surface (Route Handlers, not Server Actions, chosen specifically for this)
+- **AI integration**: scoped, cost-bounded fallback for link discovery and extraction; AI-assisted email drafting for data deletion/access requests (`generated_emails` schema already in place)
+- **PDF support**: new Layer 1 input function, no changes to extraction logic
+- **Communal features**: friend connections and shared activity visibility (requires its own privacy-model design, given the app's core premise — deliberately not started until that's scoped properly)
+- **Chrome extension / Discord bot**: enabled by the existing REST API surface (Route Handlers, not Server Actions, chosen specifically for this)
